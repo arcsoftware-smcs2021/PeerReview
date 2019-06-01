@@ -13,4 +13,5 @@ function anonymize(document,name){
 
 }
 
-anonymize("C:/Users/ronoy/anonymization/test.docx","name"); // sample call
+//anonymize("C:/Users/ronoy/anonymization/test.docx","name"); // sample call
+module.exports.anonymize = anonymize;
