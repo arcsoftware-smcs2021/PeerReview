@@ -1,0 +1,7 @@
+extends layout
+
+block content
+    p= submissionCount + " submissions"
+    input(id="review-input")
+    p Reviews
+    a(href='/lti/select/' + assignment.course_id + "/" + assignment.id) Confirm
