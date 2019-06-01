@@ -3,5 +3,4 @@ extends layout
 block content
     each assignment in assignments
         p.assignment
-            a(href='/lti/select/' + assignment.course_id + "/" + assignment.id)= assignment.name
-
+            a(href='/lti/info/' + assignment.course_id + "/" + assignment.id)= assignment.name
