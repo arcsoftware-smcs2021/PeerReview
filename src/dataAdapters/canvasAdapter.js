@@ -1,19 +1,66 @@
-const canvas = require('node-canvas-api');
+const request = require('request-promise')
+const linkParser = require('parse-link-header')
+const querystring = require('querystring')
 
-async function getTeacherIds(courseId) {
-    const teachers = await canvas.getUsersInCourse(courseId, ['enrollment_type[]=teacher', 'enrollment_type[]=ta'])
-
-    return teachers.map((t) => t.id)
-}
-
-function getStudentIds(courseId) {
-
-}
+const requestObj = url => ({
+    'method': 'GET',
+    'uri': url,
+    'json': true,
+    'resolveWithFullResponse': true,
+    'headers': {
+        'Authorization': 'Bearer ' + token
+    }
+})
 
 const adapter = {
     getAssignments: canvas.getAssignments,
-    getAssignmentSubmissions: canvas.getAssignmentSubmissions,
-    getTeacherIds
+    getAssignmentSubmissions: canvas.getAssignmentSubmissions
 }
 
-module.exports = adapter
+class CanvasAdapter {
+    constructor(apiKey, host) {
+        this.apiKey = apiKey
+        this.host = host
+    }
+
+    async fetchAll (url, result = []) {
+        const requestObj = {
+            'method': 'GET',
+            'uri': this.host + 'api/v1/' + url,
+            'json': true,
+            'resolveWithFullResponse': true,
+            'headers': {
+                'Authorization': 'Bearer ' + this.apiKey
+            }
+        }
+
+        const response = await request(requestObj(url))
+        result = [...result, ...response.body]
+        const links = linkParser(response.headers.link)
+        return links.next ? fetchAll(links.next.url, result) : result
+    }
+
+    getAssignments(courseId) {
+        return this.fetchAll(`/courses/${courseId}/assignments`)
+    }
+
+    getAssignmentSubmissions(courseId, assignmentId) {
+        return this.fetchAll(`/courses/${courseId}/assignments/${assignmentId}/submissions`)
+    }
+
+    async getTeacherIds(courseId) {
+        const teachers = await this.fetchAll('/courses/${courseId}/enrollments' + 
+          querystring.stringify({enrollment_type: ['teacher', 'ta']}))
+
+        return teachers.map((t) => t.id)
+    }
+
+    async getStudentIds(courseId) {
+        const students = await this.fetchAll('/courses/${courseId}/enrollments' +
+          querystring.stringify({enrollment_type: 'student'}))
+
+        return students.map((t) => t.id)
+    }
+}
+
+module.exports = CanvasAdapter
