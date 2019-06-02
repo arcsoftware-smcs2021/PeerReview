@@ -2,3 +2,5 @@ node_modules/
 .idea/
 .env
 yarn-error.log
+config/firestore.json
+config/secure/

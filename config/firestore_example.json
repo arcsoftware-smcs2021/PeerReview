@@ -1,0 +1,4 @@
+{
+  "project_id": "project-id",
+  "keyFilename": "./config/secure/firebase-key.json"
+}

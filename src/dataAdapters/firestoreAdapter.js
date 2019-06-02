@@ -1,7 +1,7 @@
 const {Firestore, FieldValue} = require('@google-cloud/firestore');
 
 // Create a new client
-const firestore = new Firestore();
+const firestore = new Firestore(require('./config/firestore.json'));
 
 async function addAssignment(courseId, assignmentId, submissions) {
     const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
@@ -50,7 +50,7 @@ async function checkClassOnboard(courseId) {
 async function addUser(userId) {
     const user = firestore.collection('users').doc(userId)
 
-    user.set({
+    await user.set({
         courses: [],
         submissions: [],
         reviews: []
