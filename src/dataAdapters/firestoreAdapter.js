@@ -48,6 +48,7 @@ async function checkClassOnboard(courseId) {
 }
 
 async function addUser(userId) {
+    console.log(userId)
     const user = firestore.collection('users').doc(userId)
 
     await user.set({
