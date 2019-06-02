@@ -37,16 +37,18 @@ class CanvasAdapter {
         const teachers = await this.fetchAll(`/courses/${courseId}/enrollments?` +
           querystring.stringify({enrollment_type: ['teacher', 'ta']}))
 
-        console.log(teachers)
-        return teachers.map((t) => t.id)
+        const ids = teachers.map((t) => t.id)
+        console.log(ids)
+        return ids
     }
 
     async getStudentIds(courseId) {
         const students = await this.fetchAll(`/courses/${courseId}/enrollments?` +
           querystring.stringify({enrollment_type: 'student'}))
 
-        console.log(students)
-        return students.map((t) => t.id)
+        const ids = students.map((s) => s.id)
+        console.log(ids)
+        return ids
     }
 }
 
