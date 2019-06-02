@@ -11,7 +11,7 @@ class CanvasAdapter {
     async fetchAll (url, result = []) {
         const requestObj = {
             'method': 'GET',
-            'uri': this.host + 'api/v1/' + url,
+            'uri': this.host + '/api/v1' + url,
             'json': true,
             'resolveWithFullResponse': true,
             'headers': {
@@ -19,7 +19,6 @@ class CanvasAdapter {
             }
         }
 
-        console.log(requestObj.uri)
         const response = await request(requestObj)
         result = [...result, ...response.body]
         const links = linkParser(response.headers.link)
