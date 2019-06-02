@@ -1,7 +1,7 @@
 const {Firestore, FieldValue} = require('@google-cloud/firestore');
 
 // Create a new client
-const firestore = new Firestore(require('./config/firestore.json'));
+const firestore = new Firestore(require('../../config/firestore.json'));
 
 async function addAssignment(courseId, assignmentId, submissions) {
     const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
