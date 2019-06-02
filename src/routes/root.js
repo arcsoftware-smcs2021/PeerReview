@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const canvas = require('../dataAdapters/canvasAdapter')
+
+const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
 router.get('/', (req, res, next) => {
