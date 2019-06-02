@@ -7,9 +7,7 @@ const firestore = require('../dataAdapters/firestoreAdapter')
 
 router.post('/', (req, res, next) => {
     // Context: teacher adding the tool to an assignment
-    req.session = {
-        provider: new lti.Provider(req.body.oauth_consumer_key, "BBBB")
-    }
+    req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
 
     req.session.provider.valid_request(req, (err, is_valid) => {
         console.log(req.session.provider.body)
@@ -45,9 +43,7 @@ router.post('/', (req, res, next) => {
 
 router.post('/assignment/:course/:assignment/review', (req, res, next) => {
     // Context: student visiting the assignment page
-    req.session = {
-        provider: new lti.Provider(req.body.oauth_consumer_key, "BBBB")
-    }
+    req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
 
     req.session.provider.valid_request(req, (err, is_valid) => {
         if (err) return res.status(500).send(err)
@@ -60,7 +56,7 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
 })
 
 router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
-
+    // Context: student submitting their review
     req.session.provider.outcome_service.send_replace_result_with_text(1, req.body.message, (err, result) => {
         if (err) throw err
         res.send(result)
