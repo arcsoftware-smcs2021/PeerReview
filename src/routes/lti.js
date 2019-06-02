@@ -16,7 +16,7 @@ router.post('/', (req, res, next) => {
 
         if (req.session.provider.ext_content && req.session.provider.ext_content.has_return_type("lti_launch_url")) {
             const courseId = req.body.oauth_consumer_key + req.session.provider.body.custom_canvas_course_id
-            self.firestore.checkClassOnboard(courseId).then((r) => {
+            firestore.checkClassOnboard(courseId).then((r) => {
                 if (r) {
                     // TODO: Make secure when running in prod
                     req.session.canvasAdapter = new CanvasAdapter(r.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
@@ -65,7 +65,7 @@ router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
 
 router.get('/info/:course/:assignment', (req, res, next) => {
     req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
-        self.firestore.addAssignment(req.params.course, req.params.assignment, r).then(n => {
+        firestore.addAssignment(req.params.course, req.params.assignment, r).then(n => {
             res.render("submissionInfo", {
                 title: "Peer Review",
                 submissionCount: n,
