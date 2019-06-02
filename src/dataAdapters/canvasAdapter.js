@@ -19,7 +19,6 @@ class CanvasAdapter {
             }
         }
 
-        console.log(requestObj.uri)
         const response = await request(requestObj)
         result = [...result, ...response.body]
         const links = linkParser(response.headers.link)
@@ -38,6 +37,7 @@ class CanvasAdapter {
         const teachers = await this.fetchAll(`/courses/${courseId}/enrollments?` +
           querystring.stringify({enrollment_type: ['teacher', 'ta']}))
 
+        console.log(teachers)
         return teachers.map((t) => t.id)
     }
 
@@ -45,6 +45,7 @@ class CanvasAdapter {
         const students = await this.fetchAll(`/courses/${courseId}/enrollments?` +
           querystring.stringify({enrollment_type: 'student'}))
 
+        console.log(students)
         return students.map((t) => t.id)
     }
 }
