@@ -2,16 +2,6 @@ const request = require('request-promise')
 const linkParser = require('parse-link-header')
 const querystring = require('querystring')
 
-const requestObj = url => ({
-    'method': 'GET',
-    'uri': url,
-    'json': true,
-    'resolveWithFullResponse': true,
-    'headers': {
-        'Authorization': 'Bearer ' + token
-    }
-})
-
 class CanvasAdapter {
     constructor(apiKey, host) {
         this.apiKey = apiKey
@@ -29,7 +19,7 @@ class CanvasAdapter {
             }
         }
 
-        const response = await request(requestObj(url))
+        const response = await request(requestObj)
         result = [...result, ...response.body]
         const links = linkParser(response.headers.link)
         return links.next ? fetchAll(links.next.url, result) : result

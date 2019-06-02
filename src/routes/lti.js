@@ -11,6 +11,7 @@ const self = {
 }
 
 self.router.post('/', (req, res, next) => {
+    // Context: teacher adding the tool to an assignment
     const session = {
         provider: new lti.Provider(req.body.oauth_consumer_key, "BBBB")
     }
@@ -25,9 +26,10 @@ self.router.post('/', (req, res, next) => {
             const courseId = req.body.oauth_consumer_key + session.provider.body.custom_canvas_course_id
             self.firestore.checkClassOnboard(courseId).then((r) => {
                 if (r) {
-                    session.canvasAdapter = new CanvasAdapter(r.apiKey, "")
+                    // TODO: Make secure when running in prod
+                    session.canvasAdapter = new CanvasAdapter(r.apiKey, "http://" + session.provider.body.custom_canvas_api_domain)
 
-                    self.canvas.getAssignments(session.provider.body.custom_canvas_course_id).then(r => {
+                    session.canvasAdapter.getAssignments(session.provider.body.custom_canvas_course_id).then(r => {
                         // TODO: Make secure when HTTPS works
                         self.sessions[ident] = session
                         res.cookie('session', ident, {
@@ -56,16 +58,25 @@ self.router.post('/', (req, res, next) => {
 })
 
 self.router.post('/assignment/:course/:assignment/review', (req, res, next) => {
-    const provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
-    provider.valid_request(req, (err, is_valid) => {
+    // Context: student visiting the assignment page
+    const session = {
+        provider: new lti.Provider(req.body.oauth_consumer_key, "BBBB")
+    }
+
+    session.provider.valid_request(req, (err, is_valid) => {
         const ident = req.body.oauth_consumer_key + provider.userId
-        self.sessions[ident] = provider
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
-
         // TODO: Make secure when HTTPS works
-        res.cookie('session', ident, { domain: 'localhost', maxAge: 900000, httpOnly: true});
+        self.sessions[ident] = session
+        res.cookie('session', ident, {
+            domain: 'localhost',
+            maxAge: 900000,
+            httpOnly: true,
+            sameSite: true
+        });
+
         res.render("review", {
             title: "Peer Review"
         })
@@ -73,6 +84,7 @@ self.router.post('/assignment/:course/:assignment/review', (req, res, next) => {
 })
 
 self.router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
+    // Context: student submitting data from the assignment page
     const {provider} = self.sessions[req.cookies.session]
 
     provider.outcome_service.send_replace_result_with_text(1, req.body.message, (err, result) => {
@@ -82,10 +94,11 @@ self.router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
 })
 
 self.router.get('/info/:course/:assignment', (req, res, next) => {
-    self.canvas.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
+    const session = self.sessions[req.cookies.session]
+    session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
         self.firestore.addAssignment(req.params.course, req.params.assignment, r).then(n => {
             res.render("submissionInfo", {
-                title: "selecc",
+                title: "Peer Review",
                 submissionCount: n,
                 assignment: {
                     course_id: req.params.course,
@@ -103,6 +116,7 @@ self.router.get('/info/:course/:assignment', (req, res, next) => {
 })
 
 self.router.get('/select/:course/:assignment', (req, res, next) => {
+    // Context: teacher has confirmed the assignment to add
     const {provider} = self.sessions[req.cookies.session]
 
     provider.ext_content.send_lti_launch_url(res,
