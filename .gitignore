@@ -3,4 +3,5 @@ node_modules/
 .env
 yarn-error.log
 config/firestore.json
+config/config.json
 config/secure/

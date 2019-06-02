@@ -17,7 +17,8 @@ router.get('/onboard/:courseId/:canvasCourseId', (req, res, next) => {
 
 router.post('/onboard/:courseId/:canvasCourseId', (req, res, next) => {
     const courseId = req.params.canvasCourseId
-    firestore.createCourse(req.params.courseId, req.body.apiKey, canvas.getTeacherIds(courseId), []).then(() => {
+    firestore.createCourse(req.params.courseId, req.body.apiKey,
+      req.session.canvasAdapter.getTeacherIds(courseId), []).then(() => {
         res.send("Setup successful. Please exit and reopen the External Tool window.")
     }).catch(e => {
         console.log(e)

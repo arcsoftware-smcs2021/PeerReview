@@ -2,9 +2,12 @@ const express = require('express')
 const http = require('http')
 const logger = require('morgan')
 const cookieParser = require('cookie-parser')
+const session = require('express-session')
 
 const fs = require('fs')
 const path = require('path')
+
+const config = require('../config/config.json')
 
 const app = express()
 const rootRouter = require('./routes/root.js')
@@ -52,8 +55,8 @@ function onError(error) {
 
 
 function onListening() {
-    var addr = server.address()
-    var bind = typeof addr === 'string'
+    const addr = server.address()
+    const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port
     console.log('Listening on ' + bind)
@@ -68,6 +71,9 @@ app.set('view engine', 'pug')
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(session({
+    secret: config.cookieSecret
+}))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
