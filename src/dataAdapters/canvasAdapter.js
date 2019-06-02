@@ -12,11 +12,6 @@ const requestObj = url => ({
     }
 })
 
-const adapter = {
-    getAssignments: canvas.getAssignments,
-    getAssignmentSubmissions: canvas.getAssignmentSubmissions
-}
-
 class CanvasAdapter {
     constructor(apiKey, host) {
         this.apiKey = apiKey
