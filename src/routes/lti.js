@@ -32,6 +32,7 @@ router.post('/', (req, res, next) => {
                         res.status(500).send(e)
                     })
                 } else {
+                    req.session.url = "http://" + req.session.provider.body.custom_canvas_api_domain
                     res.redirect("/onboard/" + courseId + '/' + req.session.provider.body.custom_canvas_course_id)
                 }
             })
