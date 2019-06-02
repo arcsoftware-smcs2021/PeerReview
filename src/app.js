@@ -78,7 +78,7 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', rootRouter)
-app.use('/lti', ltiRouter.router)
+app.use('/lti', ltiRouter)
 
 const server = http.createServer(app)
 server.listen(port)

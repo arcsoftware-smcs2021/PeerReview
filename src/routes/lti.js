@@ -94,4 +94,4 @@ router.get('/select/:course/:assignment', (req, res, next) => {
         "grr u", "hmmmm")
 })
 
-module.exports = self;
+module.exports = router;
