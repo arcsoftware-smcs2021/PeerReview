@@ -19,6 +19,7 @@ class CanvasAdapter {
             }
         }
 
+        console.log(requestObj.uri)
         const response = await request(requestObj)
         result = [...result, ...response.body]
         const links = linkParser(response.headers.link)
