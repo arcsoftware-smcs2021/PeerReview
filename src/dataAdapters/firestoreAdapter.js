@@ -154,7 +154,7 @@ async function getReviewsForAssignment(assignmentId, userId) {
 
     reviews.filter(r => r.get('assignment').id === assignmentDocument.id)
 
-    return reviews
+    return reviews.map(r => r.data())
 }
 
 const adapter = {

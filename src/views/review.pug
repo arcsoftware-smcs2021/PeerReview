@@ -2,6 +2,9 @@ extends layout
 
 block content
     form(action="submit", method="post")
+        each review in reviews
+            p.assignment
+                a(href=review.downloadLink) Download
         p Message
         input(type="text", name="message")
         input(type="submit", value="Submit")

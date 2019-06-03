@@ -50,7 +50,7 @@ router.post('/', (req, res, next) => {
 })
 
 router.post('/assignment/:course/:assignment/review', (req, res, next) => {
-    // Context: student visiting the assignment page
+    // Context: student or teacher visiting the assignment page
 
     // Create provider and session data
     req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
@@ -62,15 +62,23 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
-        firestore.getReviewsForAssignment(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
-            console.log(reviews)
-            res.render("review", {
+        if (req.session.provider.student) {
+            firestore.getReviewsForAssignment(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
+                res.render("review", {
+                    title: "Peer Review",
+                    reviews
+                })
+            }).catch(e => {
+                console.log(e)
+                res.status(500).send(e)
+            })
+        } else if (req.session.provider.instructor ||req.session.provider.ta) {
+            res.render("teacherReview", {
                 title: "Peer Review"
             })
-        }).catch(e => {
-            console.log(e)
-            res.status(500).send(e)
-        })
+        } else {
+            res.send("This assignment type is unsupported for your user role.")
+        }
     })
 })
 
