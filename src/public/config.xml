@@ -11,19 +11,12 @@
     <blti:title>Peer Review</blti:title>
     <blti:description>yeetbhog</blti:description>
     <blti:icon></blti:icon>
-    <blti:launch_url>http://localhost:3001/lti</blti:launch_url>
+    <blti:launch_url>http://10.240.20.191:3001/lti</blti:launch_url>
     <blti:extensions platform="canvas.instructure.com">
         <lticm:property name="tool_id">peerreview</lticm:property>
         <lticm:property name="privacy_level">public</lticm:property>
-        <lticm:options name="homework_submission">
-            <lticm:property name="url">http://localhost:3001/lti</lticm:property>
-            <lticm:property name="text">Peer Review</lticm:property>
-            <lticm:property name="selection_width">400</lticm:property>
-            <lticm:property name="selection_height">300</lticm:property>
-            <lticm:property name="enabled">true</lticm:property>
-        </lticm:options>
         <lticm:options name="resource_selection">
-            <lticm:property name="url">http://localhost:3001/lti</lticm:property>
+            <lticm:property name="url">http://10.240.20.191:3001/lti</lticm:property>
             <lticm:property name="text">Peer Review 2 Eclectic Spookaloo</lticm:property>
             <lticm:property name="selection_width">400</lticm:property>
             <lticm:property name="selection_height">300</lticm:property>
