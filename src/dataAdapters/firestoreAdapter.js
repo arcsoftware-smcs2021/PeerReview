@@ -36,6 +36,8 @@ async function addAssignment(courseId, assignmentId, submissions) {
             await assignmentDocument.update({
                 submissions: FieldValue.arrayUnion(submissionDocument)
             })
+
+            await assignSubmission(submissionDocument, submission.user_id.toString())
         }
     }
 
@@ -69,11 +71,16 @@ async function createCourse(courseId, apiKey, teacherIds, studentIds) {
         apiKey
     })
 
+    console.log(studentIds)
+    console.log(teacherIds)
+
     for (const i in teacherIds) {
-        const teacherId = teacherIds[i]
+        const teacherId = teacherIds[i].toString()
         const teacherDocument = firestore.collection('users').doc(teacherId)
         const teacherContent = await teacherDocument.get()
 
+        console.log(teacherId)
+        console.log(teacherContent.exists)
         if (!teacherContent.exists) {
             await addUser(teacherId)
         }
@@ -84,7 +91,7 @@ async function createCourse(courseId, apiKey, teacherIds, studentIds) {
     }
 
     for (const i in studentIds) {
-        const studentId = studentIds[i]
+        const studentId = studentIds[i].toString()
         const studentDocument = firestore.collection('users').doc(studentId)
         const studentContent = await studentDocument.get()
 
@@ -98,11 +105,41 @@ async function createCourse(courseId, apiKey, teacherIds, studentIds) {
     }
 }
 
+async function assignSubmission(submissionDocument, userId) {
+    const userDocument = firestore.collection('users').doc(userId)
+
+    await submissionDocument.update({
+        author: userDocument
+    })
+
+    await userDocument.update({
+        submissions: FieldValue.arrayUnion(submissionDocument)
+    })
+}
+
+async function assignReview(submissionDocument, userId) {
+    const userDocument = firestore.collection('users').doc(userId)
+
+    await userDocument.update({
+        submissions: FieldValue.arrayUnion(submissionDocument)
+    })
+}
+
+async function getSubmissions(assignmentId) {
+    const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
+    const documentSnapshot = await assignmentDocument.get()
+
+    return documentSnapshot.data().submissions
+}
+
 const adapter = {
     addAssignment,
     addUser,
+    assignSubmission,
+    assignReview,
     createCourse,
-    checkCourseOnboard: checkCourseOnboard
+    checkCourseOnboard,
+    getSubmissions
 }
 
 module.exports = adapter
