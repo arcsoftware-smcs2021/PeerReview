@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const lti = require('ims-lti')
 
+const assign = require('../lib/assign')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
@@ -37,6 +38,7 @@ router.post('/', (req, res, next) => {
                         res.status(500).send(e)
                     })
                 } else {
+                    // TODO: Make this https in prod
                     req.session.url = "http://" + req.session.provider.body.custom_canvas_api_domain
                     res.redirect("/onboard/" + courseId + '/' + req.session.provider.body.custom_canvas_course_id)
                 }
@@ -107,6 +109,7 @@ router.get('/select/:course/:assignment', (req, res, next) => {
 
     firestore.getSubmissions(req.params.assignment).then((submissions) => {
         const submissionIds = submissions.map(s => s.id)
+        console.log(assign(submissionIds, 1))
     }).catch((e) => {
         console.log(e)
         res.status(500).send(e)
