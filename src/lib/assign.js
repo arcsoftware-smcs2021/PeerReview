@@ -2,33 +2,27 @@ function shuffle(array) {
   array.sort(() => Math.random() - 0.5);
 }
 
-function assign(papers,numb_of_assignments) {
-  var len = papers.length;
-  var dict = {};
+function assign(papers, n) {
+  if (papers.length >= n) {
+    throw "Too many reviews for the number of submissions"
+  }
+
+  let assignments = {};
 
   shuffle(papers);
 
-  for (var i = 0; i < len; i++) {
-    var list = [];
+  for (let i = 0; i < papers.length; i++) {
+    const reviewer = papers[i];
+    let reviews = [];
 
-    var submission = papers[i];
-    var num = numb_of_assignments + 1;
-
-    for (var j = (i + 1) % len; j < (i + num) % len; j++) {
-      list.push(papers[j]);
+    for (let j = i + 1; j < i + n + 1; j++) {
+      reviews.push(papers[j % papers.length]);
     }
 
-    if (list.length === numb_of_assignments) {
-      dict[submission] = list;
-    } else {
-
-      list = [];
-    }
+    assignments[reviewer] = reviews;
   }
 
-  return dict;
+  return assignments;
 }
 
-
-//assign(papers,3); // sample call
 module.exports = assign;

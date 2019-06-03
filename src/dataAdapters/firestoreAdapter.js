@@ -85,6 +85,10 @@ async function createCourse(courseId, apiKey, teacherIds, studentIds) {
             await addUser(teacherId)
         }
 
+        await teacherDocument.update({
+            courses: FieldValue.arrayUnion(course)
+        })
+
         await course.update({
             teachers: FieldValue.arrayUnion(teacherDocument)
         })
@@ -98,6 +102,11 @@ async function createCourse(courseId, apiKey, teacherIds, studentIds) {
         if (!studentContent.exists) {
             await addUser(studentId)
         }
+
+
+        await studentDocument.update({
+            courses: FieldValue.arrayUnion(course)
+        })
 
         await course.update({
             students: FieldValue.arrayUnion(studentDocument)
@@ -117,12 +126,16 @@ async function assignSubmission(submissionDocument, userId) {
     })
 }
 
-async function assignReview(submissionDocument, userId) {
-    const userDocument = firestore.collection('users').doc(userId)
+async function assignReview(submissionId, user) {
+    const submissionDocument = firestore.collection('documents').doc(submissionId)
 
-    await userDocument.update({
-        submissions: FieldValue.arrayUnion(submissionDocument)
+    await user.update({
+        reviews: FieldValue.arrayUnion(submissionDocument)
     })
+}
+
+async function getSubmission(submissionId) {
+    return firestore.collection('documents').doc(submissionId).get()
 }
 
 async function getSubmissions(assignmentId) {
@@ -132,6 +145,18 @@ async function getSubmissions(assignmentId) {
     return documentSnapshot.data().submissions
 }
 
+async function getReviewsForAssignment(assignmentId, userId) {
+    const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
+
+    const userDocument = firestore.collection('users').doc(userId)
+    const userData = await userDocument.get()
+    const reviews = await Promise.all(userData.get('reviews').map(r => r.get()))
+
+    reviews.filter(r => r.get('assignment').id === assignmentDocument.id)
+
+    return reviews
+}
+
 const adapter = {
     addAssignment,
     addUser,
@@ -139,7 +164,9 @@ const adapter = {
     assignReview,
     createCourse,
     checkCourseOnboard,
-    getSubmissions
+    getSubmission,
+    getSubmissions,
+    getReviewsForAssignment
 }
 
 module.exports = adapter

@@ -62,8 +62,14 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
-        res.render("review", {
-            title: "Peer Review"
+        firestore.getReviewsForAssignment(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
+            console.log(reviews)
+            res.render("review", {
+                title: "Peer Review"
+            })
+        }).catch(e => {
+            console.log(e)
+            res.status(500).send(e)
         })
     })
 })
@@ -107,12 +113,19 @@ router.get('/select/:course/:assignment', (req, res, next) => {
     // Restore provider
     req.session.provider = router.providers[req.session.providerId]
 
-    firestore.getSubmissions(req.params.assignment).then((submissions) => {
+    firestore.getSubmissions(req.params.assignment).then(async (submissions) => {
         const submissionIds = submissions.map(s => s.id)
-        console.log(assign(submissionIds, 1))
+        const assignments = assign(submissionIds, 3)
+
+        for (const authorPaperId in assignments) {
+            const reviews = assignments[authorPaperId]
+
+            const authorSubmission = await firestore.getSubmission(authorPaperId)
+            const author = await authorSubmission.get('author')
+            reviews.map(async r => await firestore.assignReview(r, author))
+        }
     }).catch((e) => {
         console.log(e)
-        res.status(500).send(e)
     })
 
     req.session.provider.ext_content.send_lti_launch_url(res,
