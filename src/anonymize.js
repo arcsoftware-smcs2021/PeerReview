@@ -1,7 +1,7 @@
-var good_stuff = require('./doc.js');
+var doc = require('./doc.js');
 
 function anonymize(document_path) {
-  good_stuff.edit(document).then(function(res, err) {
+  doc.edit(document).then(function(res, err) {
     if (err) {
       console.log(err)
     } else {
