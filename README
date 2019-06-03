@@ -1,1 +1,4 @@
-asf
+This is a Poolesville High School client project for a teacher.
+
+Using the Canvas API and nodejs, we are building a peer review platform that can anonymize papers, be assigned to students,
+and allow for returning feedback to students.
