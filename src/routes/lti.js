@@ -49,6 +49,8 @@ router.post('/', (req, res, next) => {
 
 router.post('/assignment/:course/:assignment/review', (req, res, next) => {
     // Context: student visiting the assignment page
+
+    // Create provider and session data
     req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
     req.session.providerId = req.body.oauth_consumer_key + req.session.provider.custom_canvas_user_id
     router.providers[req.session.providerId] = req.session.provider
@@ -103,8 +105,15 @@ router.get('/select/:course/:assignment', (req, res, next) => {
     // Restore provider
     req.session.provider = router.providers[req.session.providerId]
 
+    firestore.getSubmissions(req.params.assignment).then((submissions) => {
+        const submissionIds = submissions.map(s => s.id)
+    }).catch((e) => {
+        console.log(e)
+        res.status(500).send(e)
+    })
+
     req.session.provider.ext_content.send_lti_launch_url(res,
-        "http://localhost:3001/lti/assignment/" + req.params.course + "/" + req.params.assignment + "/review",
+        "http://localhost:3001/lti/assignment/" + req.session.key + req.params.course + "/" + req.params.assignment + "/review",
         "grr u", "hmmmm")
 })
 

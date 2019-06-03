@@ -16,12 +16,12 @@ router.get('/onboard/:courseId/:canvasCourseId', (req, res, next) => {
     })
 })
 
-router.post('/onboard/:courseId/:canvasCourseId', (req, res, next) => {
+router.post('/onboard/:courseId/:canvasCourseId', async (req, res, next) => {
     req.session.canvasAdapter = new CanvasAdapter(req.body.apiKey, req.session.url)
 
     const courseId = req.params.canvasCourseId
     firestore.createCourse(req.params.courseId, req.body.apiKey,
-      req.session.canvasAdapter.getTeacherIds(courseId), req.session.canvasAdapter.getStudentIds(courseId)).then(() => {
+      await req.session.canvasAdapter.getTeacherIds(courseId), await req.session.canvasAdapter.getStudentIds(courseId)).then(() => {
         res.send("Setup successful. Please exit and reopen the External Tool window.")
     }).catch(e => {
         console.log(e)
