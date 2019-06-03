@@ -5,3 +5,5 @@ yarn-error.log
 config/firestore.json
 config/config.json
 config/secure/
+.DS_Store
+*/.DS_Store
