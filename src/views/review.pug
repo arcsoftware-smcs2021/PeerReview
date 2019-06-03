@@ -1,10 +1,10 @@
 extends layout
 
 block content
-    form(action="submit", method="post")
+    .reviews
         each review in reviews
-            p.assignment
+            .assignment
                 a(href=review.downloadLink) Download
-        p Message
-        input(type="text", name="message")
-        input(type="submit", value="Submit")
+            p Notes
+            input(type="text", class="message")
+            input(type="submit", class="submitReview", value="Submit")
