@@ -5,21 +5,26 @@ const lti = require('ims-lti')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
+router.providers = {}
+
 router.post('/', (req, res, next) => {
     // Context: teacher adding the tool to an assignment
     req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
+    req.session.providerId = req.body.oauth_consumer_key + req.session.provider.custom_canvas_user_id
+    router.providers[req.session.providerId] = req.session.provider
+    req.session.key = req.body.oauth_consumer_key
 
     req.session.provider.valid_request(req, (err, is_valid) => {
-        console.log(req.session.provider.body)
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
         if (req.session.provider.ext_content && req.session.provider.ext_content.has_return_type("lti_launch_url")) {
             const courseId = req.body.oauth_consumer_key + req.session.provider.body.custom_canvas_course_id
-            firestore.checkClassOnboard(courseId).then((r) => {
+            firestore.checkCourseOnboard(courseId).then((r) => {
                 if (r) {
+                    const course = r.data()
                     // TODO: Make secure when running in prod
-                    req.session.canvasAdapter = new CanvasAdapter(r.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
+                    req.session.canvasAdapter = new CanvasAdapter(course.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
 
                     req.session.canvasAdapter.getAssignments(req.session.provider.body.custom_canvas_course_id).then(r => {
                         // TODO: Make secure when HTTPS works
@@ -45,6 +50,9 @@ router.post('/', (req, res, next) => {
 router.post('/assignment/:course/:assignment/review', (req, res, next) => {
     // Context: student visiting the assignment page
     req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
+    req.session.providerId = req.body.oauth_consumer_key + req.session.provider.custom_canvas_user_id
+    router.providers[req.session.providerId] = req.session.provider
+    req.session.key = req.body.oauth_consumer_key
 
     req.session.provider.valid_request(req, (err, is_valid) => {
         if (err) return res.status(500).send(err)
@@ -58,6 +66,9 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
 
 router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
     // Context: student submitting their review
+    // Restore provider
+    req.session.provider = router.providers[req.session.providerId]
+
     req.session.provider.outcome_service.send_replace_result_with_text(1, req.body.message, (err, result) => {
         if (err) throw err
         res.send(result)
@@ -65,8 +76,11 @@ router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
 })
 
 router.get('/info/:course/:assignment', (req, res, next) => {
+    // Restore adapter from serialization
+    req.session.canvasAdapter = new CanvasAdapter(req.session.canvasAdapter.apiKey, req.session.canvasAdapter.host)
+
     req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
-        firestore.addAssignment(req.params.course, req.params.assignment, r).then(n => {
+        firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, r).then(n => {
             res.render("submissionInfo", {
                 title: "Peer Review",
                 submissionCount: n,
@@ -86,6 +100,9 @@ router.get('/info/:course/:assignment', (req, res, next) => {
 })
 
 router.get('/select/:course/:assignment', (req, res, next) => {
+    // Restore provider
+    req.session.provider = router.providers[req.session.providerId]
+
     req.session.provider.ext_content.send_lti_launch_url(res,
         "http://localhost:3001/lti/assignment/" + req.params.course + "/" + req.params.assignment + "/review",
         "grr u", "hmmmm")

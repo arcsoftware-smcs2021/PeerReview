@@ -11,13 +11,14 @@ async function addAssignment(courseId, assignmentId, submissions) {
         submissions: []
     })
 
-    const classDocument = firestore.collection('classes').doc(courseId)
+    const courseDocument = firestore.collection('courses').doc(courseId)
 
     try {
-        await classDocument.update({
+        await courseDocument.update({
             assignments: FieldValue.arrayUnion(assignmentDocument)
         });
     } catch (e) {
+        console.log(e)
         throw new Error("Class not setup.")
     }
 
@@ -42,8 +43,8 @@ async function addAssignment(courseId, assignmentId, submissions) {
 }
 
 
-async function checkClassOnboard(courseId) {
-    const course = firestore.collection('classes').doc(courseId).get()
+async function checkCourseOnboard(courseId) {
+    const course = await firestore.collection('courses').doc(courseId).get()
     return course.exists ? course : false
 }
 
@@ -101,7 +102,7 @@ const adapter = {
     addAssignment,
     addUser,
     createCourse,
-    checkClassOnboard
+    checkCourseOnboard: checkCourseOnboard
 }
 
 module.exports = adapter
