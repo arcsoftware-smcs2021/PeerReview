@@ -3,7 +3,6 @@ const router = express.Router()
 const lti = require('ims-lti')
 
 const assign = require('../lib/assign')
-const promisedProperties = require('../lib/promisedProperties')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
