@@ -1,0 +1,11 @@
+extends layout
+
+block content
+    .reviews
+        if incompleteCount > 0
+            p
+                b='Waiting on ' + incompleteCount + ' review' + (incompleteCount === 1 ? '' : 's')
+        each review in reviews
+            if review.status === "complete"
+                .review
+                    p=review.message
