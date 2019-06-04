@@ -3,6 +3,7 @@ const router = express.Router()
 const lti = require('ims-lti')
 
 const assign = require('../lib/assign')
+const promisedProperties = require('../lib/promisedProperties')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
@@ -90,12 +91,31 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
                     })
                 }
             })
-        } else if (req.session.provider.instructor ||req.session.provider.ta) {
+        } else if (req.session.provider.instructor || req.session.provider.ta) {
             firestore.getSubmissions(req.params.assignment).then(submissions => {
-                console.log(submissions)
+                Promise.all(submissions.map(sub => sub.get())).then(async submissionData => {
+                    const authors = submissionData.map(sub => sub.get('author'))
+                    let students = []
 
-                res.render("viewReviewsTeacher", {
-                    title: "Peer Review"
+                    for (const author of authors) {
+                        const student = {
+                            reviews: await firestore.getReviewsOfUser(req.params.assignment, author.id),
+                            id: author.id,
+                            incompleteCount: 0
+                        }
+
+                        for (const review of student.reviews) {
+                            if (review.status !== "complete") student.incompleteCount++
+                        }
+
+                        students.push(student)
+                    }
+
+
+                    res.render("viewReviewsTeacher", {
+                        title: "Peer Review",
+                        students
+                    })
                 })
             })
 

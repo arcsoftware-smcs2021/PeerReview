@@ -177,7 +177,7 @@ async function getReviewsFromUser(assignmentId, userId) {
     const reviewDocuments = await Promise.all(reviews.map(r => r.get()))
 
     // TODO: fix this
-    reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
+    // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
 
     const reviewData = reviewDocuments.map(r => r.data())
     const submissions = await Promise.all(reviewData.map(r => r.submission.get()))
@@ -193,22 +193,27 @@ async function getReviewsFromUser(assignmentId, userId) {
 }
 
 async function getReviewsOfUser(assignmentId, userId) {
-    const reviews = await firestore.collection('reviews').get()
-    let reviewData = reviews.docs.map(r => r.data())
-    console.log(reviewData)
+    const reviewsCollection = firestore.collection('reviews')
+    const reviews = await reviewsCollection.orderBy('message').get()
+    // console.log(reviews.size)
+    let reviewData = []
+
+    reviews.forEach(r => {
+        // console.log(r.data())
+        reviewData.push(r.data())
+    })
+
+    // console.log(reviewData)
 
     await Promise.all(reviewData.map(async r => {
         const submission = await r.submission.get()
         r.submission = submission.data()
 
-        return ""
+        return null
     }))
-
-    console.log(reviewData)
 
     reviewData = reviewData.filter(r => r.submission.assignment.id === assignmentId)
     reviewData = reviewData.filter(r => r.submission.author.id === userId)
-
 
     return reviewData
 }
