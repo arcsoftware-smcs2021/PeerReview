@@ -1,6 +1,9 @@
 extends layout
 
 block content
-    each assignment in assignments
-        p.assignment
-            a(href='/lti/info/' + assignment.course_id + "/" + assignment.id)= assignment.name
+    div(class = 'dropdown')
+      button(class = 'mainmenubtn')= Select Assignment
+      div(class = 'dropdown-child')
+      each assignment in assignments
+          p.assignment
+              a(href='/lti/info/' + assignment.course_id + "/" + assignment.id)= assignment.name
