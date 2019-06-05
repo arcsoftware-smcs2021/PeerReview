@@ -27,7 +27,7 @@ async function addAssignment(courseId, assignmentId, submissions) {
         if (submission.workflow_state !== 'unsubmitted' && submission.attachments) {
             submissionCount++
 
-            const submissionDocument = firestore.collection('documents').doc(submission.attachments[0].uuid)
+            const submissionDocument = firestore.collection('submissions').doc(submission.attachments[0].uuid)
             await submissionDocument.set({
                 assignment: assignmentDocument,
                 downloadLink: submission.attachments[0].url
@@ -127,15 +127,99 @@ async function assignSubmission(submissionDocument, userId) {
 }
 
 async function assignReview(submissionId, user) {
-    const submissionDocument = firestore.collection('documents').doc(submissionId)
+    const submissionDocument = firestore.collection('submissions').doc(submissionId)
+    const reviewsCollection = firestore.collection('reviews')
 
+    const reviewDocument = await reviewsCollection.add({
+        submission: submissionDocument,
+        status: 'incomplete'
+    })
+
+    console.log(reviewDocument.id)
     await user.update({
-        reviews: FieldValue.arrayUnion(submissionDocument)
+        reviews: FieldValue.arrayUnion(reviewDocument)
     })
 }
 
+async function checkReviewsCompleted(userId) {
+    const user = await firestore.collection('users').doc(userId).get()
+
+    const userReviews = await user.get('reviews')
+    for (const userReview of userReviews) {
+        const reviewData = await userReview.get()
+        const reviewStatus = reviewData.get('status')
+
+        if (reviewStatus !== "complete") {
+            return false
+        }
+    }
+
+    return true
+}
+
+async function completeReview(reviewId, userId, updateBlob) {
+    const review = firestore.collection('reviews').doc(reviewId)
+
+    await review.update({
+        ...updateBlob,
+        status: "complete"
+    })
+
+    return checkReviewsCompleted(userId)
+}
+
+async function getReviewsFromUser(assignmentId, userId) {
+    const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
+
+    const userDocument = firestore.collection('users').doc(userId)
+    const userData = await userDocument.get()
+    const reviews = await userData.get('reviews')
+    const reviewDocuments = await Promise.all(reviews.map(r => r.get()))
+
+    // TODO: fix this
+    // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
+
+    const reviewData = reviewDocuments.map(r => r.data())
+    const submissions = await Promise.all(reviewData.map(r => r.submission.get()))
+
+    for (const i in reviewData) {
+        const review = reviewData[i]
+
+        review.id = reviews[i].id
+        review.downloadLink  = submissions[i].data().downloadLink
+    }
+
+    return reviewData
+}
+
+async function getReviewsOfUser(assignmentId, userId) {
+    const reviewsCollection = firestore.collection('reviews')
+    const reviews = await reviewsCollection.orderBy('message').get()
+    // console.log(reviews.size)
+    let reviewData = []
+
+    reviews.forEach(r => {
+        // console.log(r.data())
+        reviewData.push(r.data())
+    })
+
+    // console.log(reviewData)
+
+    await Promise.all(reviewData.map(async r => {
+        const submission = await r.submission.get()
+        r.submission = submission.data()
+
+        return null
+    }))
+
+    reviewData = reviewData.filter(r => r.submission.assignment.id === assignmentId)
+    reviewData = reviewData.filter(r => r.submission.author.id === userId)
+
+    return reviewData
+}
+
 async function getSubmission(submissionId) {
-    return firestore.collection('documents').doc(submissionId).get()
+    return firestore.collection('submissions').doc(submissionId).get()
 }
 
 async function getSubmissions(assignmentId) {
@@ -145,28 +229,19 @@ async function getSubmissions(assignmentId) {
     return documentSnapshot.data().submissions
 }
 
-async function getReviewsForAssignment(assignmentId, userId) {
-    const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
-
-    const userDocument = firestore.collection('users').doc(userId)
-    const userData = await userDocument.get()
-    const reviews = await Promise.all(userData.get('reviews').map(r => r.get()))
-
-    reviews.filter(r => r.get('assignment').id === assignmentDocument.id)
-
-    return reviews.map(r => r.data())
-}
-
 const adapter = {
     addAssignment,
     addUser,
     assignSubmission,
     assignReview,
+    completeReview,
     createCourse,
     checkCourseOnboard,
+    checkReviewsCompleted,
     getSubmission,
     getSubmissions,
-    getReviewsForAssignment
+    getReviewsFromUser,
+    getReviewsOfUser
 }
 
 module.exports = adapter

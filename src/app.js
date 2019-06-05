@@ -75,7 +75,7 @@ app.use(session({
     secret: config.cookieSecret
 }))
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, '..', 'public')))
 
 app.use('/', rootRouter)
 app.use('/lti', ltiRouter)

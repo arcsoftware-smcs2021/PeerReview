@@ -63,33 +63,101 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
         if (!is_valid) return res.status(401).send("invalid sig")
 
         if (req.session.provider.student) {
-            firestore.getReviewsForAssignment(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
-                res.render("review", {
-                    title: "Peer Review",
-                    reviews
+            firestore.checkReviewsCompleted(req.session.provider.body.custom_canvas_user_id).then(completed => {
+                if (completed) {
+                    firestore.getReviewsOfUser(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
+                        let incompleteCount = 0
+
+                        for (const review of reviews) {
+                            if (review.status !== "complete") incompleteCount++
+                        }
+
+                        res.render("viewReviewsStudent", {
+                            title: "Peer Review",
+                            reviews,
+                            incompleteCount
+                        })
+                    })
+                } else {
+                    firestore.getReviewsFromUser(req.params.assignment, req.session.provider.body.custom_canvas_user_id).then(reviews => {
+                        res.render("review", {
+                            title: "Peer Review",
+                            reviews
+                        })
+                    }).catch(e => {
+                        console.log(e)
+                        res.status(500).send(e)
+                    })
+                }
+            })
+        } else if (req.session.provider.instructor || req.session.provider.ta) {
+            firestore.getSubmissions(req.params.assignment).then(submissions => {
+                Promise.all(submissions.map(sub => sub.get())).then(async submissionData => {
+                    const authors = submissionData.map(sub => sub.get('author'))
+                    let students = []
+
+                    for (const author of authors) {
+                        const student = {
+                            reviews: await firestore.getReviewsOfUser(req.params.assignment, author.id),
+                            id: author.id,
+                            incompleteCount: 0
+                        }
+
+                        for (const review of student.reviews) {
+                            if (review.status !== "complete") student.incompleteCount++
+                        }
+
+                        students.push(student)
+                    }
+
+
+                    res.render("viewReviewsTeacher", {
+                        title: "Peer Review",
+                        students
+                    })
                 })
-            }).catch(e => {
-                console.log(e)
-                res.status(500).send(e)
             })
-        } else if (req.session.provider.instructor ||req.session.provider.ta) {
-            res.render("teacherReview", {
-                title: "Peer Review"
-            })
+
         } else {
             res.send("This assignment type is unsupported for your user role.")
         }
     })
 })
 
-router.post('/assignment/:course/:assignment/submit', (req, res, next) => {
-    // Context: student submitting their review
+router.post('/assignment/:course/:assignment/review/:reviewId', (req, res, next) => {
     // Restore provider
+    // Context: student updating their review
     req.session.provider = router.providers[req.session.providerId]
+    const userId = req.session.provider.body.custom_canvas_user_id
 
-    req.session.provider.outcome_service.send_replace_result_with_text(1, req.body.message, (err, result) => {
-        if (err) throw err
-        res.send(result)
+    firestore.completeReview(req.params.reviewId, userId, req.body).then(complete => {
+        console.log(complete)
+        if (complete) {
+            firestore.getReviewsFromUser(req.params.assignment, userId).then(async reviews => {
+                let resString = ""
+
+                for (const review of reviews) {
+                    const submission = await review.submission.get()
+                    const author = await submission.get('author')
+                    resString += "<p><b>Review of " + author.id + "</b><br/>"
+                    resString += review.message
+                    resString += "</p>"
+                }
+
+                console.log(resString)
+
+                req.session.provider.outcome_service.send_replace_result_with_text(1, resString, (err, result) => {
+                    if (err) throw err
+                    res.send(result)
+                })
+            }).catch((e) => {
+                console.log(e)
+                res.status(500).send(e)
+            })
+        }
+    }).catch((e) => {
+        console.log(e)
+        res.status(500).send(e)
     })
 })
 
@@ -123,7 +191,7 @@ router.get('/select/:course/:assignment', (req, res, next) => {
 
     firestore.getSubmissions(req.params.assignment).then(async (submissions) => {
         const submissionIds = submissions.map(s => s.id)
-        const assignments = assign(submissionIds, 3)
+        const assignments = assign(submissionIds, 2)
 
         for (const authorPaperId in assignments) {
             const reviews = assignments[authorPaperId]

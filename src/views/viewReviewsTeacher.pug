@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    each student in students
+        b='Reviews of ' + student.id
+        .reviews
+            if student.incompleteCount > 0
+                p
+                    b='Waiting on ' + student.incompleteCount + ' review' + (student.incompleteCount === 1 ? '' : 's')
+            each review in student.reviews
+                if review.status === "complete"
+                    .review
+                        p=review.message

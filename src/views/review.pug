@@ -1,10 +1,13 @@
 extends layout
 
+block head
+    script(src='/scripts/review.js')
+
 block content
     .reviews
         each review in reviews
-            .assignment
+            .review(id=review.id)
                 a(href=review.downloadLink) Download
-            p Notes
-            input(type="text", class="message")
-            input(type="submit", class="submitReview", value="Submit")
+                p Notes
+                input(type="text", class="message")
+                input(type="submit", class="submitReview", value="Submit")

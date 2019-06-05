@@ -3,7 +3,7 @@ function shuffle(array) {
 }
 
 function assign(papers, n) {
-  if (papers.length >= n) {
+  if (n >= papers.length) {
     throw "Too many reviews for the number of submissions"
   }
 
