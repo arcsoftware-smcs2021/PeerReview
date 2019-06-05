@@ -1,4 +1,5 @@
 extends layout
+include viewReview
 
 block content
     each student in students
@@ -9,5 +10,4 @@ block content
                     b='Waiting on ' + student.incompleteCount + ' review' + (student.incompleteCount === 1 ? '' : 's')
             each review in student.reviews
                 if review.status === "complete"
-                    .review
-                        p=review.message
+                    +viewReview(review)

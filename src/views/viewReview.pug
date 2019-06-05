@@ -1,0 +1,17 @@
+mixin viewReview(review)
+    .review
+        table#criteria
+            tr
+                th Description
+                th Total Points
+                th Comments
+                th Score
+            each criteria in review.rubric
+                tr
+                    td
+                        p=criteria.description
+                        p=criteria.longDescription
+                    td=criteria.totalPoints
+                    td=criteria.message || ""
+                    td=criteria.score || "none"
+        p=review.message

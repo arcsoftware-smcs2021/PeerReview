@@ -3,12 +3,21 @@ const {Firestore, FieldValue} = require('@google-cloud/firestore');
 // Create a new client
 const firestore = new Firestore(require('../../config/firestore.json'));
 
-async function addAssignment(courseId, assignmentId, submissions) {
+async function addAssignment(courseId, assignmentId, submissions, rubric) {
     const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
     let submissionCount = 0
 
+    rubric = rubric.map(criteria => {return {
+        description: criteria.description,
+        longDescription: criteria.long_description,
+        totalPoints: criteria.points,
+        message: "",
+        ratings: criteria.ratings
+    }})
+
     await assignmentDocument.set({
-        submissions: []
+        submissions: [],
+        rubric: rubric || {}
     })
 
     const courseDocument = firestore.collection('courses').doc(courseId)
@@ -128,14 +137,20 @@ async function assignSubmission(submissionDocument, userId) {
 
 async function assignReview(submissionId, user) {
     const submissionDocument = firestore.collection('submissions').doc(submissionId)
+    const submissionData = await submissionDocument.get()
     const reviewsCollection = firestore.collection('reviews')
+    const assignmentDoc = submissionData.get('assignment')
+    const assignmentData = await assignmentDoc.get()
+    const rubric = assignmentData.get('rubric')
 
     const reviewDocument = await reviewsCollection.add({
         submission: submissionDocument,
-        status: 'incomplete'
+        status: 'incomplete',
+        author: submissionData.get('author'),
+        assignment: assignmentDoc,
+        rubric: rubric
     })
 
-    console.log(reviewDocument.id)
     await user.update({
         reviews: FieldValue.arrayUnion(reviewDocument)
     })
@@ -160,6 +175,20 @@ async function checkReviewsCompleted(userId) {
 async function completeReview(reviewId, userId, updateBlob) {
     const review = firestore.collection('reviews').doc(reviewId)
 
+    if (updateBlob.rubric) {
+        const reviewData = await review.get()
+        const rubric = reviewData.get('rubric')
+
+        for (const i in rubric) {
+            // Merge the update criteria and the data from firestore
+            // ... is spread notation, inlines all properties of the object
+            updateBlob.rubric[i] = {
+                ...updateBlob.rubric[i],
+                ...rubric[i]
+            }
+        }
+    }
+
     await review.update({
         ...updateBlob,
         status: "complete"
@@ -180,6 +209,7 @@ async function getReviewsFromUser(assignmentId, userId) {
     // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
 
     const reviewData = reviewDocuments.map(r => r.data())
+    console.log(reviewData)
     const submissions = await Promise.all(reviewData.map(r => r.submission.get()))
 
     for (const i in reviewData) {
@@ -193,17 +223,16 @@ async function getReviewsFromUser(assignmentId, userId) {
 }
 
 async function getReviewsOfUser(assignmentId, userId) {
-    const reviewsCollection = firestore.collection('reviews')
-    const reviews = await reviewsCollection.orderBy('message').get()
-    // console.log(reviews.size)
+    const userDocument = firestore.collection('users').doc(userId)
+    const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
+    const reviews = await firestore.collection('reviews')
+        .where('author', '==', userDocument)
+        .where('assignment', '==', assignmentDocument).get()
     let reviewData = []
 
     reviews.forEach(r => {
-        // console.log(r.data())
         reviewData.push(r.data())
     })
-
-    // console.log(reviewData)
 
     await Promise.all(reviewData.map(async r => {
         const submission = await r.submission.get()
@@ -213,8 +242,8 @@ async function getReviewsOfUser(assignmentId, userId) {
     }))
 
     reviewData = reviewData.filter(r => r.submission.assignment.id === assignmentId)
-    reviewData = reviewData.filter(r => r.submission.author.id === userId)
 
+    reviewData = reviewData.filter(r => r.submission.author.id === userId)
     return reviewData
 }
 
