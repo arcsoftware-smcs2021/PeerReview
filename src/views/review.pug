@@ -6,12 +6,11 @@ block head
 block content
     .reviews
         each review in reviews
-          div(class = 'w3-bar w3-black')
+          div.w3-bar.w3-black
             button(type = "button", class="w3-bar-item w3-button", onclick="openReview(review)") review
         each review in reviews
-          div(id = review, class = 'review')
             .review(id=review.id)
-                table#criteria
+                table.criteria
                     tr
                         th Description
                         th Total Points

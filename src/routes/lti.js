@@ -198,7 +198,7 @@ router.get('/select/:course/:assignment', (req, res, next) => {
 
     firestore.getSubmissions(req.params.assignment).then(async (submissions) => {
         const submissionIds = submissions.map(s => s.id)
-        const assignments = assign(submissionIds, 2)
+        const assignments = assign(submissionIds, parseInt(req.query.reviewNum))
 
         for (const authorPaperId in assignments) {
             const reviews = assignments[authorPaperId]

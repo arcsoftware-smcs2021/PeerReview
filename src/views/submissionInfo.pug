@@ -2,6 +2,8 @@ extends layout
 
 block content
     p= submissionCount + " submissions"
-    input(id="review-input")
-    h1 Reviews
-    a(class = 'button' , href='/lti/select/' + assignment.course_id + "/" + assignment.id) Confirm
+    form(method='get', action='/lti/select/' + assignment.course_id + "/" + assignment.id)
+        div.reviewNumContainer
+            input#reviewInput(name="reviewNum", type='number', value=(submissionCount <= 3 ? submissionCount - 1 : 3))
+            p reviews
+        input#submitButton(type='submit', value='Confirm')

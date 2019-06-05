@@ -11,3 +11,4 @@ block content
             each review in student.reviews
                 if review.status === "complete"
                     +viewReview(review)
+                    a(href=review.downloadLink) Download Original Document
