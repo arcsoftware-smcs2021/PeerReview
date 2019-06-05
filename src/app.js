@@ -7,7 +7,9 @@ const session = require('express-session')
 const fs = require('fs')
 const path = require('path')
 
-const config = require('../config/config.json')
+const config = {
+    cookieSecret: process.env.COOKIE_SECRET
+}
 
 const app = express()
 const rootRouter = require('./routes/root.js')
