@@ -7,13 +7,16 @@ const session = require('express-session')
 const fs = require('fs')
 const path = require('path')
 
+// Import the config file
 const config = require('../config/config.json')
 
+// Create the Express application and import the routers (these contain the bulk of the logic)
 const app = express()
 const rootRouter = require('./routes/root.js')
 const ltiRouter = require('./routes/lti.js')
 
 function normalizePort(val) {
+    // Validates the port number, mostly boilerplate
     let port = parseInt(val, 10)
 
     if (isNaN(port)) {
@@ -30,6 +33,8 @@ function normalizePort(val) {
 }
 
 function onError(error) {
+    // Error handling for the server, again just boilerplate to catch a few things
+
     if (error.syscall !== 'listen') {
         throw error
     }
@@ -55,6 +60,8 @@ function onError(error) {
 
 
 function onListening() {
+    // Output a status message when listening
+
     const addr = server.address()
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
@@ -62,24 +69,33 @@ function onListening() {
     console.log('Listening on ' + bind)
 }
 
+// Set the port number, default to 3001
 const port = normalizePort(process.env.PORT || '3001')
 app.set('port', port)
 
+// Set the directory for views, these are templated using pug (https://pugjs.org)
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'pug')
 
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+
+// Use the session library, this functions similar to PHP sessions and stores a reference to data
+// using a unique cookie for each user
 app.use(session({
     secret: config.cookieSecret
 }))
 app.use(cookieParser())
+
+// Set the directory where static files are stored
 app.use(express.static(path.join(__dirname, '..', 'public')))
 
+// Use the routers
 app.use('/', rootRouter)
 app.use('/lti', ltiRouter)
 
+// Start the server
 const server = http.createServer(app)
 server.listen(port)
 server.on('error', onError);

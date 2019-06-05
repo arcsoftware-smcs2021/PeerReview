@@ -78,6 +78,6 @@ module.exports = {
 
         // Return the new URL
         // TODO: Make secure in prod
-        return "http://localhost:3001/public/documents/" + path.basename(filePath)
+        return "http://localhost:3001/documents/" + path.basename(filePath)
     }
 }

@@ -4,6 +4,7 @@ const {Firestore, FieldValue} = require('@google-cloud/firestore');
 const firestore = new Firestore(require('../../config/firestore.json'));
 
 async function addAssignment(courseId, assignmentId, submissions, rubric) {
+    // Add an assignment to the database and reference it appropriately
     const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
     let submissionCount = 0
 
@@ -205,8 +206,7 @@ async function getReviewsFromUser(assignmentId, userId) {
     const reviews = await userData.get('reviews')
     const reviewDocuments = await Promise.all(reviews.map(r => r.get()))
 
-    // TODO: fix this
-    // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
+    reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
 
     const reviewData = reviewDocuments.map(r => r.data())
     console.log(reviewData)
@@ -223,27 +223,28 @@ async function getReviewsFromUser(assignmentId, userId) {
 }
 
 async function getReviewsOfUser(assignmentId, userId) {
+    // Get the documents needed
     const userDocument = firestore.collection('users').doc(userId)
     const assignmentDocument = firestore.collection('assignments').doc(assignmentId)
+
+    // Filter the reviews
     const reviews = await firestore.collection('reviews')
         .where('author', '==', userDocument)
         .where('assignment', '==', assignmentDocument).get()
     let reviewData = []
 
+    // This segment converts data from Firestore snapshots into Javascript objects
     reviews.forEach(r => {
         reviewData.push(r.data())
     })
-
     await Promise.all(reviewData.map(async r => {
         const submission = await r.submission.get()
         r.submission = submission.data()
 
+        // A return is used to make timing work but no value is passed back
         return null
     }))
 
-    reviewData = reviewData.filter(r => r.submission.assignment.id === assignmentId)
-
-    reviewData = reviewData.filter(r => r.submission.author.id === userId)
     return reviewData
 }
 
@@ -258,6 +259,7 @@ async function getSubmissions(assignmentId) {
     return documentSnapshot.data().submissions
 }
 
+// Export the functions
 const adapter = {
     addAssignment,
     addUser,

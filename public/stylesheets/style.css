@@ -9,7 +9,7 @@ General CSS for things. Preferrably match the color scheme of Instructure
 body {
   font-family: "Symbola";
   font-size: 16px;
-  color:rgb(176,196,222);
+  color: rgb(7, 7, 7);
 }
 
 h1 {
