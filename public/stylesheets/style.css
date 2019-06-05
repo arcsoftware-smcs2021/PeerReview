@@ -7,20 +7,19 @@ General CSS for things. Preferrably match the color scheme of Instructure
 */
 
 body {
-  font-family: "Symbola";
+  font-family: "Lato";
   font-size: 18px;
   color:rgb(176,196,222);
 }
 
 h1 {
   color: rgb(30,144,255);
+  font-family: "Lato";
 }
 
 @font-face {
-  font-family: "Symbola";
-  src: url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf") format("truetype"),
-       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.woff") format("woff"),
-       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.svg") format("svg");
+  font-family: "Lato";
+  src: url("Lato-Regular.ttf");
 }
 
 a {
