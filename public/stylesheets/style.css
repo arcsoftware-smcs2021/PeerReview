@@ -101,7 +101,8 @@ Flexbox styling
 
 .flex-container {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: row;
+  align-items: center;
 }
 
 .flex-container > div {
