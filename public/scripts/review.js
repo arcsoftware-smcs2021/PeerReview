@@ -23,3 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 )}, false)
+
+/*
+Make tabs for the review.pug filePath
+*/
+
+function openReview(reviewName) {
+  var x = document.getElementsByClassName("review");
+  var i;
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+
+  document.getElementbyId(reviewName).style.display = "block";
+}

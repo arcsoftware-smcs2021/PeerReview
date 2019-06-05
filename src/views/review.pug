@@ -6,6 +6,10 @@ block head
 block content
     .reviews
         each review in reviews
+          div(class = 'w3-bar w3-black')
+            button(type = "button", class="w3-bar-item w3-button", onclick="openReview(review)") review
+        each review in reviews
+          div(id = review, class = 'review')
             .review(id=review.id)
                 a(href=review.downloadLink) Download
                 p Notes
