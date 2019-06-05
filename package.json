@@ -19,5 +19,8 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "rimraf": "^2.6.3"
+  },
+  "engines": {
+    "node": "10.x"
   }
 }
