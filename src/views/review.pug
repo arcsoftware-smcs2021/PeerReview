@@ -27,7 +27,7 @@ block content
                             td
                                 input(type="number", class="criteriaScore", value=criteria.score || 0)
 
-                a(href=review.downloadLink) Download
+                iframe.docPreview(width="100%", height="1000px", src="https://docs.google.com/gview?url=" + review.downloadLink + "&embedded=true")
                 p Notes
                 input(type="text", class="message", value=review.message || "")
                 input(type="submit", class="submitReview", value="Submit")
