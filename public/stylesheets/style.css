@@ -18,7 +18,9 @@ h1 {
 
 @font-face {
   font-family: "Symbola";
-  src: url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf");
+  src: url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf") format("truetype"),
+       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.woff") format("woff"),
+       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.svg") format("svg");
 }
 
 /*
