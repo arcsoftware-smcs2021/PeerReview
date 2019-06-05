@@ -6,9 +6,6 @@ block head
 block content
     .reviews
         each review in reviews
-          div.w3-bar.w3-black
-            button(type = "button", class="w3-bar-item w3-button", onclick="openReview(review)") review
-        each review in reviews
             .review(id=review.id)
                 table.criteria
                     tr
