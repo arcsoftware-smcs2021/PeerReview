@@ -1,23 +1,32 @@
 const zipStream = require('node-stream-zip');
 const fs = require('fs');
+const path = require('path')
 const archiver = require('archiver');
 const rimraf = require("rimraf")
 
 module.exports = {
     extractDocx: function (filePath) {
+        // Extracts the XML documents that make up a DOCX
+
         return new Promise(
-            function (resolve, reject) {
+            (resolve, reject) => {
+                // Open the docx as a zip file
                 const zip = new zipStream({
                     file: filePath,
                     storeEntries: true
                 })
-                //unzip file to directory
+                // Unzip file to directory
+                const targetDirectory = path.dirname(filePath)
+
                 zip.on('ready', () => {
-                    rimraf('tmp/documents/enhof/ext', () => {
-                        fs.mkdir('tmp/documents/enhof/ext', err => {
+                    // rimraf works like rm -rf, deletes the directory if it exists so we work from a clean slate
+                    rimraf(targetDirectory, () => {
+                        // Create the directory
+                        fs.mkdir(targetDirectory, err => {
                             if (err) reject(err)
                         })
-                        zip.extract(null, 'tmp/documents/enhof/ext', (err, count) => {
+                        // And extract into it
+                        zip.extract(null, targetDirectory, (err, count) => {
                             if (err) reject(err)
                             zip.close()
                             resolve()
@@ -27,30 +36,48 @@ module.exports = {
             }
         )
     },
-    anonymize: async function (filePath, firstName, lastName) {
+    anonymize: async function (filePath, censoredStrings) {
+        // Replaces occurrences of censoredStrings in the DOCX file pointed to by filePath
+
+        // Extract the docx so we can work with it's internals
         await module.exports.extractDocx(filePath)
-        //editing the file
-        console.log('yeeeeee boiiiiiii')
-        const data = await new Promise((resolve, reject) => fs.readFile('tmp/documents/enhof/ext/word/document.xml', 'utf8', (err, data) => {
+
+        // Read the contents
+        const targetDirectory = path.dirname(filePath) // The directory the files were extracted to
+        const data = await new Promise((resolve, reject) => fs.readFile(targetDirectory + '/word/document.xml', 'utf8', (err, data) => {
             if (err) reject(err)
             else resolve(data)
         }))
 
-        let result = data.split(firstName).join("x".repeat(firstName.length));
-        result = result.split(lastName).join("x".repeat(lastName.length));
-        fs.writeFile('tmp/documents/enhof/ext/word/document.xml', result, (err) => {
-            if (err) reject(err)
-            //zipping the file back to docx
-            var output = fs.createWriteStream('public/documents/output.docx')
-            var archive = archiver('zip')
+        // Loop through and replace the strings
+        let result = data
+        for (const censor of censoredStrings) {
+            result = result.split(censor).join("x".repeat(censor.length));
+        }
 
-            archive.on('error', function (err) {
-                throw err;
+        // Write the new string back to the file
+        await new Promise((resolve, reject) => {
+            fs.writeFile(targetDirectory + '/word/document.xml', result, (err) => {
+                if (err) reject(err)
+                else resolve()
             })
-
-            archive.pipe(output)
-            archive.directory("tmp/documents/enhof/ext", "../")
-            archive.finalize()
         })
+
+        // Re-compress the document
+        const output = fs.createWriteStream('public/documents/' + path.basename(filePath))
+        const archive = archiver('zip')
+
+        archive.on('error', function (err) {
+            throw err;
+        })
+
+        // Output the archive to the stream and add the directory to it
+        archive.pipe(output)
+        archive.directory(targetDirectory, "../")
+        archive.finalize()
+
+        // Return the new URL
+        // TODO: Make secure in prod
+        return "http://localhost:3001/public/documents/" + path.basename(filePath)
     }
 }

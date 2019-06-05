@@ -59,6 +59,10 @@ class CanvasAdapter {
         return teachers.map((t) => t.id)
     }
 
+    async getUser(userId) {
+        return this.fetch(`/users/${userId}`)
+    }
+
     async getStudentIds(courseId) {
         const students = await this.fetchAll(`/courses/${courseId}/enrollments?` +
           querystring.stringify({enrollment_type: 'student'}))
