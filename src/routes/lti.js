@@ -118,7 +118,6 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
                     })
                 })
             })
-
         } else {
             res.send("This assignment type is unsupported for your user role.")
         }
@@ -167,9 +166,13 @@ router.get('/info/:course/:assignment', (req, res, next) => {
     // Restore adapter from serialization
     req.session.canvasAdapter = new CanvasAdapter(req.session.canvasAdapter.apiKey, req.session.canvasAdapter.host)
 
-    req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
+    req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((submissions) => {
         req.session.canvasAdapter.getAssignment(req.params.course, req.params.assignment).then((assignment) => {
-            firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, r, assignment.rubric).then(n => {
+            for (const submission of submissions) {
+                console.log(submission)
+            }
+
+            firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, submissions, assignment.rubric).then(n => {
                 res.render("submissionInfo", {
                     title: "Peer Review",
                     submissionCount: n,
