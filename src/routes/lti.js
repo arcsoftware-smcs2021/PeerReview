@@ -1,16 +1,28 @@
 const express = require('express')
 const router = express.Router()
 const lti = require('ims-lti')
+const fetch = require('node-fetch')
 const pug = require('pug')
+const rimraf = require("rimraf")
+
+const fs = require('fs')
+// TODO: Replace with https in prod
+const http = require('http')
 
 const assign = require('../lib/assign')
+const docx = require('../lib/docx')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
 const firestore = require('../dataAdapters/firestoreAdapter')
 
+
+// Initialize a store for the Canvas tool provider objects, as they are not saved by the
+// session store provided by Express
 router.providers = {}
 
 router.post('/', (req, res, next) => {
     // Context: teacher adding the tool to an assignment
+
+    // Create provider and session data
     req.session.provider = new lti.Provider(req.body.oauth_consumer_key, "BBBB")
     req.session.providerId = req.body.oauth_consumer_key + req.session.provider.custom_canvas_user_id
     router.providers[req.session.providerId] = req.session.provider
@@ -28,10 +40,11 @@ router.post('/', (req, res, next) => {
                     // TODO: Make secure when running in prod
                     req.session.canvasAdapter = new CanvasAdapter(course.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
 
+                    // Pull down all assignments in the class from Canvas API
                     req.session.canvasAdapter.getAssignments(req.session.provider.body.custom_canvas_course_id).then(r => {
-                        // TODO: Make secure when HTTPS works
+                        // Render the assignment selector
                         res.render("assignmentSelector", {
-                            title: "selecc",
+                            title: "Peer Review",
                             assignments: r
                         })
                     }).catch(e => {
@@ -125,8 +138,9 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
 })
 
 router.post('/assignment/:course/:assignment/review/:reviewId', (req, res, next) => {
-    // Restore provider
     // Context: student updating their review
+
+    // Restore provider from serialization
     req.session.provider = router.providers[req.session.providerId]
     const userId = req.session.provider.body.custom_canvas_user_id
 
@@ -167,12 +181,41 @@ router.get('/info/:course/:assignment', (req, res, next) => {
     req.session.canvasAdapter = new CanvasAdapter(req.session.canvasAdapter.apiKey, req.session.canvasAdapter.host)
 
     req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((submissions) => {
-        req.session.canvasAdapter.getAssignment(req.params.course, req.params.assignment).then((assignment) => {
+        req.session.canvasAdapter.getAssignment(req.params.course, req.params.assignment).then(async (assignment) => {
             for (const submission of submissions) {
-                console.log(submission)
+                // Pull out attachment data and create download path
+                const attachment = submission.attachments[0]
+                const downloadDir = 'tmp/documents/' + attachment.uuid
+                const documentPath = downloadDir + '/' + attachment.uuid + '.docx'
+
+                // Download the attachment, we create a stream to write to
+                const res = await fetch(attachment.url)
+                await new Promise((resolve, reject) => rimraf(downloadDir, resolve))
+                fs.mkdirSync(downloadDir)
+                const outputFileStream = fs.createWriteStream(documentPath)
+
+                // Wrap this in a promise to synchronize
+                await new Promise((resolve, reject) => {
+                    // Pipe to the file and resolve when done
+                    res.body.pipe(outputFileStream)
+                    res.body.on("error", (err) => {
+                        reject(err)
+                    });
+                    outputFileStream.on("finish", () => resolve())
+                })
+
+                // Get the name of the author so it can be censored
+                // TODO: Might need testing in prod, myMCPS has a specific format
+                const author = await req.session.canvasAdapter.getUser(submission.user_id)
+                submission.authorName = author.name
+
+                // With the file downloaded it can be anonymized and the url can be changed to the new copy
+                submission.attachments[0].url = await docx.anonymize(documentPath, author.name.split(" "))
             }
 
+            // Add the assignment to firestore
             firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, submissions, assignment.rubric).then(n => {
+                // Render a confirmation page and selector for number of reviews
                 res.render("submissionInfo", {
                     title: "Peer Review",
                     submissionCount: n,
@@ -196,7 +239,10 @@ router.get('/info/:course/:assignment', (req, res, next) => {
 })
 
 router.get('/select/:course/:assignment', (req, res, next) => {
-    // Restore provider
+    // Context: Teacher has selected the assignment and chosen the number of reviews
+    // This function assigns papers to students to review and stores that in Firestore
+
+    // Restore provider from serialization
     req.session.provider = router.providers[req.session.providerId]
 
     firestore.getSubmissions(req.params.assignment).then(async (submissions) => {
