@@ -9,11 +9,18 @@ General CSS for things. Preferrably match the color scheme of Instructure
 body {
   font-family: "Symbola";
   font-size: 16px;
+<<<<<<< HEAD
   color:rgb(176,196,222);
 }
 
 h1 {
   color: rgb(30,144,255);
+=======
+}
+
+h1 {
+
+>>>>>>> b019400fe844ff1c928e0fbbe1837754d5f5becf
 }
 
 @font-face {

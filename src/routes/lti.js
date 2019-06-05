@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const lti = require('ims-lti')
+const pug = require('pug')
 
 const assign = require('../lib/assign')
 const CanvasAdapter = require('../dataAdapters/canvasAdapter')
@@ -131,7 +132,6 @@ router.post('/assignment/:course/:assignment/review/:reviewId', (req, res, next)
     const userId = req.session.provider.body.custom_canvas_user_id
 
     firestore.completeReview(req.params.reviewId, userId, req.body).then(complete => {
-        console.log(complete)
         if (complete) {
             firestore.getReviewsFromUser(req.params.assignment, userId).then(async reviews => {
                 let resString = ""
@@ -140,20 +140,22 @@ router.post('/assignment/:course/:assignment/review/:reviewId', (req, res, next)
                     const submission = await review.submission.get()
                     const author = await submission.get('author')
                     resString += "<p><b>Review of " + author.id + "</b><br/>"
-                    resString += review.message
-                    resString += "</p>"
-                }
 
-                console.log(resString)
+                    resString += pug.compileFile('src/views/renderReview.pug', {})({
+                        review
+                    })
+                }
 
                 req.session.provider.outcome_service.send_replace_result_with_text(1, resString, (err, result) => {
                     if (err) throw err
-                    res.send(result)
+                    res.send("refresh")
                 })
             }).catch((e) => {
                 console.log(e)
                 res.status(500).send(e)
             })
+        } else {
+            res.status(202).send("")
         }
     }).catch((e) => {
         console.log(e)
@@ -166,14 +168,19 @@ router.get('/info/:course/:assignment', (req, res, next) => {
     req.session.canvasAdapter = new CanvasAdapter(req.session.canvasAdapter.apiKey, req.session.canvasAdapter.host)
 
     req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((r) => {
-        firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, r).then(n => {
-            res.render("submissionInfo", {
-                title: "Peer Review",
-                submissionCount: n,
-                assignment: {
-                    course_id: req.params.course,
-                    id: req.params.assignment
-                }
+        req.session.canvasAdapter.getAssignment(req.params.course, req.params.assignment).then((assignment) => {
+            firestore.addAssignment(req.session.key + req.params.course, req.params.assignment, r, assignment.rubric).then(n => {
+                res.render("submissionInfo", {
+                    title: "Peer Review",
+                    submissionCount: n,
+                    assignment: {
+                        course_id: req.params.course,
+                        id: req.params.assignment
+                    }
+                })
+            }).catch((e) => {
+                console.log(e)
+                res.status(500).send(e)
             })
         }).catch((e) => {
             console.log(e)
@@ -191,7 +198,7 @@ router.get('/select/:course/:assignment', (req, res, next) => {
 
     firestore.getSubmissions(req.params.assignment).then(async (submissions) => {
         const submissionIds = submissions.map(s => s.id)
-        const assignments = assign(submissionIds, 2)
+        const assignments = assign(submissionIds, parseInt(req.query.reviewNum))
 
         for (const authorPaperId in assignments) {
             const reviews = assignments[authorPaperId]

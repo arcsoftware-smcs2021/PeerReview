@@ -6,12 +6,28 @@ block head
 block content
     .reviews
         each review in reviews
-          div(class = 'w3-bar w3-black')
+          div.w3-bar.w3-black
             button(type = "button", class="w3-bar-item w3-button", onclick="openReview(review)") review
         each review in reviews
-          div(id = review, class = 'review')
             .review(id=review.id)
-                a(href=review.downloadLink) Download
+                table.criteria
+                    tr
+                        th Description
+                        th Total Points
+                        th Comments
+                        th Score
+                    each criteria in review.rubric
+                        tr
+                            td
+                                p=criteria.description
+                                p=criteria.longDescription
+                            td=criteria.totalPoints
+                            td
+                                input(type="text", class="criteriaMessage", value=criteria.message || "")
+                            td
+                                input(type="number", class="criteriaScore", value=criteria.score || 0)
+
+                iframe.docPreview(width="100%", height="1000px", src="https://docs.google.com/gview?url=" + review.downloadLink + "&embedded=true")
                 p Notes
-                input(type="text", class="message")
+                input(type="text", class="message", value=review.message || "")
                 input(type="submit", class="submitReview", value="Submit")

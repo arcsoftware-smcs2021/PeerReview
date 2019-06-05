@@ -1,4 +1,5 @@
 extends layout
+include viewReview
 
 block content
     .reviews
@@ -7,5 +8,4 @@ block content
                 b='Waiting on ' + incompleteCount + ' review' + (incompleteCount === 1 ? '' : 's')
         each review in reviews
             if review.status === "complete"
-                .review
-                    p=review.message
+                +viewReview(review)
