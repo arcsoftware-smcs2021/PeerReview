@@ -64,9 +64,8 @@ module.exports = {
                     console.log('yeeeeee boiiiiiii')
                     fs.readFile('./extracted_doc/word/document.xml', 'utf8', (err, data) => {
                         if (err) reject(err);
-                        var name = data.indexOf('<w:t>')
-                        var end = data.indexOf('<\/w:t>')
-                        var result = data.replace(data.slice(name + 5, end), "XXXXXXXXXXXXXXXXXX")
+                        var result = data.split(firstName).join("x".repeat(firstName.length));
+                        result = result.split(lastName).join("x".repeat(lastName.length));
                         fs.writeFile('./extracted_doc/word/document.xml', result, (err) => {
                             if (err) reject(err)
                             //zipping the file back to docx
