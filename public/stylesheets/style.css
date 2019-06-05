@@ -8,7 +8,7 @@ General CSS for things. Preferrably match the color scheme of Instructure
 
 body {
   font-family: "Symbola";
-  font-size: 16px;
+  font-size: 18px;
   color:rgb(176,196,222);
 }
 
@@ -18,7 +18,13 @@ h1 {
 
 @font-face {
   font-family: "Symbola";
-  src: url("https://github.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf");
+  src: url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf") format("truetype"),
+       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.woff") format("woff"),
+       url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.svg") format("svg");
+}
+
+a {
+  text-decoration: none;
 }
 
 /*
@@ -91,4 +97,18 @@ CSS for the tabs in review.pug
   padding: 6px 12px;
   border: 1px solid #ccc;
   border-top: none;
+}
+
+/*
+Flexbox styling
+*/
+
+.flex-container {
+  display: flex;
+  flex-wrap: row;
+  align-items: center;
+}
+
+.flex-container > div {
+  text-align: left;
 }
