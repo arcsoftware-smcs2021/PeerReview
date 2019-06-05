@@ -1,4 +1,11 @@
 const {Firestore, FieldValue} = require('@google-cloud/firestore');
+const fs = require('fs')
+
+// Read firestore config from environment if needed
+if (process.env.FIRESTORE_CONFIG) {
+    fs.writeFileSync('./config/firestore.json', process.env.FIRESTORE_CONFIG)
+    fs.writeFileSync('./config/secure/firebase-key.json', process.env.FIRESTORE_KEY)
+}
 
 // Create a new client
 const firestore = new Firestore(require('../../config/firestore.json'));
