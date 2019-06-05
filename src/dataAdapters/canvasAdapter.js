@@ -25,8 +25,27 @@ class CanvasAdapter {
         return links.next ? fetchAll(links.next.url, result) : result
     }
 
+    async fetch (url, result = []) {
+        const requestObj = {
+            'method': 'GET',
+            'uri': this.host + '/api/v1' + url,
+            'json': true,
+            'resolveWithFullResponse': true,
+            'headers': {
+                'Authorization': 'Bearer ' + this.apiKey
+            }
+        }
+
+        const response = await request(requestObj)
+        return response.body
+    }
+
     getAssignments(courseId) {
         return this.fetchAll(`/courses/${courseId}/assignments`)
+    }
+
+    getAssignment(courseId, assignmentId) {
+        return this.fetch(`/courses/${courseId}/assignments/${assignmentId}`)
     }
 
     getAssignmentSubmissions(courseId, assignmentId) {

@@ -7,7 +7,24 @@ block content
     .reviews
         each review in reviews
             .review(id=review.id)
+                table#criteria
+                    tr
+                        th Description
+                        th Total Points
+                        th Comments
+                        th Score
+                    each criteria in review.rubric
+                        tr
+                            td
+                                p=criteria.description
+                                p=criteria.longDescription
+                            td=criteria.totalPoints
+                            td
+                                input(type="text", class="criteriaMessage", value=criteria.message || "")
+                            td
+                                input(type="number", class="criteriaScore", value=criteria.score || 0)
+
                 a(href=review.downloadLink) Download
                 p Notes
-                input(type="text", class="message")
+                input(type="text", class="message", value=review.message || "")
                 input(type="submit", class="submitReview", value="Submit")
