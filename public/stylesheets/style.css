@@ -94,3 +94,16 @@ CSS for the tabs in review.pug
   border: 1px solid #ccc;
   border-top: none;
 }
+
+/*
+Flexbox styling
+*/
+
+.flex-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.flex-container > div {
+  text-align: left;
+}
