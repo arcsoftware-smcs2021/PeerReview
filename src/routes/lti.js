@@ -6,7 +6,7 @@ const pug = require('pug')
 const rimraf = require("rimraf")
 
 const fs = require('fs')
-// TODO: Replace with https in prod
+// TODO: Replace with https in myMCPS prod
 const http = require('http')
 
 // Import other pieces of code, these contain algorithms specific to the peer review features
@@ -44,7 +44,7 @@ router.post('/', (req, res, next) => {
             firestore.checkCourseOnboard(courseId).then((r) => {
                 if (r) {
                     const course = r.data()
-                    // TODO: Make secure when running in prod
+                    // TODO: Make secure when running in myMCPS prod
                     req.session.canvasAdapter = new CanvasAdapter(course.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
 
                     // Pull down all assignments in the class from Canvas API
@@ -303,7 +303,7 @@ router.get('/select/:course/:assignment', (req, res, next) => {
 
     // Pass back the final URL that the assignment page will use as the External Tool
     req.session.provider.ext_content.send_lti_launch_url(res,
-        "http://localhost:3001/lti/assignment/" + req.session.key + req.params.course + "/" + req.params.assignment + "/review",
+        "https://graded-peer-review.herokuapp.com/lti/assignment/" + req.session.key + req.params.course + "/" + req.params.assignment + "/review",
         "grr u", "hmmmm")
 })
 
