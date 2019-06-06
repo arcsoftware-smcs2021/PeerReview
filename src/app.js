@@ -8,7 +8,7 @@ const fs = require('fs')
 const path = require('path')
 
 const config = {
-    cookieSecret: process.env.COOKIE_SECRET
+  cookieSecret: process.env.COOKIE_SECRET
 }
 
 // Create the Express application and import the routers (these contain the bulk of the logic)
@@ -17,57 +17,52 @@ const rootRouter = require('./routes/root.js')
 const ltiRouter = require('./routes/lti.js')
 
 function normalizePort(val) {
-    // Validates the port number, mostly boilerplate
-    let port = parseInt(val, 10)
+  // Validates the port number, mostly boilerplate
+  let port = parseInt(val, 10)
 
-    if (isNaN(port)) {
-        // named pipe
-        return val
-    }
+  if (isNaN(port)) {
+    // named pipe
+    return val
+  }
 
-    if (port >= 0) {
-        // port number
-        return port
-    }
+  if (port >= 0) {
+    // port number
+    return port
+  }
 
-    return false
+  return false
 }
 
 function onError(error) {
-    // Error handling for the server, again just boilerplate to catch a few things
+  // Error handling for the server, again just boilerplate to catch a few things
 
-    if (error.syscall !== 'listen') {
-        throw error
-    }
+  if (error.syscall !== 'listen') {
+    throw error
+  }
 
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port
+  const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
 
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges')
-            process.exit(1)
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use')
-            process.exit(1)
-            break;
-        default:
-            throw error
-    }
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges')
+      process.exit(1)
+      break
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use')
+      process.exit(1)
+      break
+    default:
+      throw error
+  }
 }
 
-
 function onListening() {
-    // Output a status message when listening
+  // Output a status message when listening
 
-    const addr = server.address()
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port
-    console.log('Listening on ' + bind)
+  const addr = server.address()
+  const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
+  console.log('Listening on ' + bind)
 }
 
 // Set the port number, default to 3001
@@ -87,9 +82,11 @@ app.use(express.urlencoded({ extended: false }))
 
 // Use the session library, this functions similar to PHP sessions and stores a reference to data
 // using a unique cookie for each user
-app.use(session({
+app.use(
+  session({
     secret: config.cookieSecret
-}))
+  })
+)
 app.use(cookieParser())
 
 // Set the directory where static files are stored
@@ -102,5 +99,5 @@ app.use('/lti', ltiRouter)
 // Start the server
 const server = http.createServer(app)
 server.listen(port)
-server.on('error', onError);
-server.on('listening', onListening);
+server.on('error', onError)
+server.on('listening', onListening)
