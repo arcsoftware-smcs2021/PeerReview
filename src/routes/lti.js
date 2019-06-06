@@ -32,6 +32,8 @@ router.post('/', (req, res, next) => {
     router.providers[req.session.providerId] = req.session.provider
     req.session.key = req.body.oauth_consumer_key
 
+    console.log(req.protocol)
+    console.log(req.headers.host)
     // Validate the external tool request
     req.protocol = "https" // Protocol is lost by proxy in prod, restore to fix signature
     req.session.provider.valid_request(req, (err, is_valid) => {
