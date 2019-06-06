@@ -90,7 +90,7 @@ async function createCourse(courseId, apiKey, users) {
     })
 
     for (const user of users) {
-        const userId = user.id.toString()
+        const userId = user.user.id.toString()
         const userDocument = firestore.collection('users').doc(userId)
         const userContent = await userDocument.get()
 
