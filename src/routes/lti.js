@@ -220,6 +220,11 @@ router.get('/info/:course/:assignment', (req, res, next) => {
                 const downloadDir = 'tmp/documents/' + attachment.uuid
                 const documentPath = downloadDir + '/' + attachment.uuid + '.docx'
 
+                // Make sure all needed directories exist
+                if (!fs.existsSync('tmp/')) fs.mkdirSync('tmp/')
+                if (!fs.existsSync('tmp/documents')) fs.mkdirSync('tmp/documents')
+                if (!fs.existsSync('public/documents')) fs.mkdirSync('public/documents')
+
                 // Download the attachment, we create a stream to write to
                 const res = await fetch(attachment.url)
                 await new Promise((resolve, reject) => rimraf(downloadDir, resolve))
