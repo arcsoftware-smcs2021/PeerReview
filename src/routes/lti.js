@@ -6,8 +6,6 @@ const pug = require('pug')
 const rimraf = require("rimraf")
 
 const fs = require('fs')
-// TODO: Replace with https in myMCPS prod
-const http = require('http')
 
 // Import other pieces of code, these contain algorithms specific to the peer review features
 const assign = require('../lib/assign')
@@ -44,8 +42,7 @@ router.post('/', (req, res, next) => {
             firestore.checkCourseOnboard(courseId).then((r) => {
                 if (r) {
                     const course = r.data()
-                    // TODO: Make secure when running in myMCPS prod
-                    req.session.canvasAdapter = new CanvasAdapter(course.apiKey, "http://" + req.session.provider.body.custom_canvas_api_domain)
+                    req.session.canvasAdapter = new CanvasAdapter(course.apiKey, "https://" + req.session.provider.body.custom_canvas_api_domain)
 
                     // Pull down all assignments in the class from Canvas API
                     req.session.canvasAdapter.getAssignments(req.session.provider.body.custom_canvas_course_id).then(r => {
@@ -60,8 +57,7 @@ router.post('/', (req, res, next) => {
                     })
                 } else {
                     // If we're here, we don't have an API key for the course and need to prompt for one
-                    // TODO: Make this https in prod
-                    req.session.url = "http://" + req.session.provider.body.custom_canvas_api_domain
+                    req.session.url = "https://" + req.session.provider.body.custom_canvas_api_domain
 
                     // Redirect to the onboad page
                     res.redirect("/onboard/" + courseId + '/' + req.session.provider.body.custom_canvas_course_id)

@@ -77,7 +77,6 @@ module.exports = {
         archive.finalize()
 
         // Return the new URL
-        // TODO: Make secure in prod
         return "https://graded-peer-review.herokuapp.com/documents/" + path.basename(filePath)
     }
 }
