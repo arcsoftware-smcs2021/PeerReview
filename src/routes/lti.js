@@ -243,8 +243,7 @@ router.get('/info/:course/:assignment', (req, res, next) => {
 
                 // Get the name of the author so it can be censored
                 // TODO: Might need testing in prod, myMCPS has a specific format
-                const author = await req.session.canvasAdapter.getUser(submission.user_id)
-                submission.authorName = author.name
+                submission.authorName = await firestore.getUserName(submission.user_id)
 
                 // With the file downloaded it can be anonymized and the url can be changed to the new copy
                 submission.attachments[0].url = await docx.anonymize(documentPath, author.name.split(" "))

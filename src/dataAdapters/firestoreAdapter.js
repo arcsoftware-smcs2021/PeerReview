@@ -243,6 +243,13 @@ async function getReviewsOfUser(assignmentId, userId) {
     return reviewData
 }
 
+async function getUserName(userId) {
+    const userDocument = firestore.collection('users').doc(userId)
+    const userData = await userDocument.get()
+
+    return userData.get('name')
+}
+
 async function getSubmission(submissionId) {
     return firestore.collection('submissions').doc(submissionId).get()
 }
@@ -267,7 +274,8 @@ const adapter = {
     getSubmission,
     getSubmissions,
     getReviewsFromUser,
-    getReviewsOfUser
+    getReviewsOfUser,
+    getUserName
 }
 
 module.exports = adapter
