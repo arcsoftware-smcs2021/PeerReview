@@ -7,8 +7,9 @@ const session = require('express-session')
 const fs = require('fs')
 const path = require('path')
 
-// Import the config file
-const config = require('../config/config.json')
+const config = {
+    cookieSecret: process.env.COOKIE_SECRET
+}
 
 // Create the Express application and import the routers (these contain the bulk of the logic)
 const app = express()

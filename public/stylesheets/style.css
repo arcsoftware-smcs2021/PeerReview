@@ -3,16 +3,17 @@ General CSS for things. Preferrably match the color scheme of Instructure
 */
 
 body {
-    font-family: "Symbola", sans-serif;
+    font-family: "Lato";
     font-size: 18px;
-    /*background-color: rgb(176, 196, 222);*/
+}
+
+h1 {
+  font-family: "Lato";
 }
 
 @font-face {
-    font-family: "Symbola";
-    src: url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.ttf") format("truetype"),
-    url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.woff") format("woff"),
-    url("https://raw.githubusercontent.com/instructure/canvas-lms/blob/master/public/fonts/Symbola.svg") format("svg");
+  font-family: "Lato";
+  src: url("Lato-Regular.ttf");
 }
 
 a {
