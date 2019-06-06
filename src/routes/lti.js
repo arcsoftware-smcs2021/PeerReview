@@ -34,7 +34,7 @@ router.post('/', (req, res, next) => {
 
     // Validate the external tool request
     req.session.provider.valid_request(req, (err, is_valid) => {
-        console.log(req.body)
+        console.log(req)
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
