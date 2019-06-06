@@ -33,8 +33,8 @@ router.post('/', (req, res, next) => {
     req.session.key = req.body.oauth_consumer_key
 
     // Validate the external tool request
+    req.protocol = "https" // Protocol is lost by proxy in prod, restore to fix signature
     req.session.provider.valid_request(req, (err, is_valid) => {
-        console.log(req)
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
 
@@ -85,6 +85,7 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
     req.session.key = req.body.oauth_consumer_key
 
     // Validate the request
+    req.protocol = "https" // Protocol is lost by proxy in prod, restore to fix signature
     req.session.provider.valid_request(req, (err, is_valid) => {
         if (err) return res.status(500).send(err)
         if (!is_valid) return res.status(401).send("invalid sig")
