@@ -214,6 +214,8 @@ router.get('/info/:course/:assignment', (req, res, next) => {
 
     req.session.canvasAdapter.getAssignmentSubmissions(req.params.course, req.params.assignment).then((submissions) => {
         req.session.canvasAdapter.getAssignment(req.params.course, req.params.assignment).then(async (assignment) => {
+            console.log(submissions)
+
             for (const submission of submissions) {
                 // Pull out attachment data and create download path
                 const attachment = submission.attachments[0]
