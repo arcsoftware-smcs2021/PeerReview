@@ -246,7 +246,7 @@ router.get('/info/:course/:assignment', (req, res, next) => {
                 submission.authorName = await firestore.getUserName(submission.user_id.toString())
 
                 // With the file downloaded it can be anonymized and the url can be changed to the new copy
-                submission.attachments[0].url = await docx.anonymize(documentPath, author.name.split(" "))
+                submission.attachments[0].url = await docx.anonymize(documentPath, submission.authorName.split(" "))
             }
 
             // Add the assignment to firestore
