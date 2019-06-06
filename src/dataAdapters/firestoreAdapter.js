@@ -244,8 +244,11 @@ async function getReviewsOfUser(assignmentId, userId) {
 }
 
 async function getUserName(userId) {
+    console.log(userId)
     const userDocument = firestore.collection('users').doc(userId)
+    console.log(userDocument)
     const userData = await userDocument.get()
+    console.log(userData)
 
     return userData.get('name')
 }
