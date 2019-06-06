@@ -13,14 +13,14 @@
     <blti:icon></blti:icon>
     <blti:launch_url>https://graded-peer-review.herokuapp.com/lti</blti:launch_url>
     <blti:extensions platform="canvas.instructure.com">
-        <lticm:property name="tool_id">gradedpeerreview</lticm:property>
+        <lticm:property name="tool_id">peerreview</lticm:property>
         <lticm:property name="domain">graded-peer-review.herokuapp.com</lticm:property>
         <lticm:property name="privacy_level">public</lticm:property>
         <lticm:options name="resource_selection">
             <lticm:property name="url">https://graded-peer-review.herokuapp.com/lti</lticm:property>
             <lticm:property name="text">Graded Peer Review</lticm:property>
-            <lticm:property name="selection_width">400</lticm:property>
-            <lticm:property name="selection_height">300</lticm:property>
+            <lticm:property name="selection_width">600</lticm:property>
+            <lticm:property name="selection_height">600</lticm:property>
             <lticm:property name="enabled">true</lticm:property>
         </lticm:options>
     </blti:extensions>
