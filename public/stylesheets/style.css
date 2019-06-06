@@ -133,3 +133,7 @@ Styling for the review number input in submissionInfo.pug
     width: 32px;
     margin-right: 8px;
 }
+
+.documentLink {
+    margin-left: 16px;
+}

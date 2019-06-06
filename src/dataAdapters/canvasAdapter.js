@@ -55,20 +55,9 @@ class CanvasAdapter {
         return this.fetchAll(`/courses/${courseId}/assignments/${assignmentId}/submissions`)
     }
 
-    async getTeacherIds(courseId) {
-        // Returns a list of the ID's of teachers of a course
-        const teachers = await this.fetchAll(`/courses/${courseId}/enrollments?` +
-          querystring.stringify({enrollment_type: ['teacher', 'ta']}))
-
-        return teachers.map((t) => t.id)
-    }
-
-    async getStudentIds(courseId) {
-        // Returns a list of the ID's of students of a course
-        const students = await this.fetchAll(`/courses/${courseId}/enrollments?` +
-            querystring.stringify({enrollment_type: 'student'}))
-
-        return students.map((s) => s.id)
+    getUsers(courseId) {
+        // Returns a list of the students in a course
+        return this.fetchAll(`/courses/${courseId}/enrollments`)
     }
 
     async getUser(userId) {

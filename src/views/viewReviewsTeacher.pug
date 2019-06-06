@@ -3,12 +3,13 @@ include viewReview
 
 block content
     each student in students
-        b='Reviews of ' + student.id
+        h2='Reviews of ' + student.name
         .reviews
             if student.incompleteCount > 0
                 p
                     b='Waiting on ' + student.incompleteCount + ' review' + (student.incompleteCount === 1 ? '' : 's')
             each review in student.reviews
                 if review.status === "complete"
+                    h4="Review by " + review.reviewerName
                     +viewReview(review)
-                    a(href=review.downloadLink) Download Original Document
+                    a.documentLink(href=review.downloadLink) Download Original Document

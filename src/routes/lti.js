@@ -133,14 +133,15 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
 
                     // Looping through all the authors
                     for (const author of authors) {
+                        const authorData = await author.get()
+
                         // Create an object to pass to the front end that represents the student in the context of being reviewed
                         const student = {
                             reviews: await firestore.getReviewsOfUser(req.params.assignment, author.id),
                             id: author.id,
+                            name: (await author.get()).get('name'),
                             incompleteCount: 0
                         }
-
-                        console.log(student.reviews)
 
                         // Count incomplete reviews
                         for (const review of student.reviews) {

@@ -76,26 +76,26 @@ async function addUser(userId, name) {
 async function createCourse(courseId, apiKey, users) {
     const course = firestore.collection('courses').doc(courseId)
     await course.set({
-        students: [],
+        users: [],
         assignments: [],
         apiKey
     })
 
-    for (const student of users) {
-        const studentId = student.id
-        const studentDocument = firestore.collection('users').doc(studentId)
-        const studentContent = await studentDocument.get()
+    for (const user of users) {
+        const userId = user.id.toString()
+        const userDocument = firestore.collection('users').doc(userId)
+        const userContent = await userDocument.get()
 
-        if (!studentContent.exists) {
-            await addUser(studentId, student.name)
+        if (!userContent.exists) {
+            await addUser(userId, user.user.name)
         }
 
-        await studentDocument.update({
+        await userDocument.update({
             courses: FieldValue.arrayUnion(course)
         })
 
         await course.update({
-            students: FieldValue.arrayUnion(studentDocument)
+            users: FieldValue.arrayUnion(userDocument)
         })
     }
 }
@@ -133,9 +133,9 @@ async function assignReview(submissionId, user) {
         submission: submissionDocument,
         status: 'incomplete',
         author: authorDoc,
-        reviewerName: userData.get(name),
-        authorName: authorData.get(name),
-        downloadLink: submissionData.get('downloadLink')
+        reviewerName: userData.get('name'),
+        authorName: authorData.get('name'),
+        downloadLink: submissionData.get('downloadLink'),
         assignment: assignmentDoc,
         rubric: rubric
     })
@@ -194,10 +194,9 @@ async function getReviewsFromUser(assignmentId, userId) {
     const reviews = await userData.get('reviews')
     const reviewDocuments = await Promise.all(reviews.map(r => r.get()))
 
-    // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
+    reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
 
     const reviewData = reviewDocuments.map(r => r.data())
-    console.log(reviewData)
     const submissions = await Promise.all(reviewData.map(r => r.submission.get()))
 
     for (const i in reviewData) {
