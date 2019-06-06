@@ -60,11 +60,12 @@ async function checkCourseOnboard(courseId) {
     return course.exists ? course : false
 }
 
-async function addUser(userId) {
+async function addUser(userId, name) {
     console.log(userId)
     const user = firestore.collection('users').doc(userId)
 
     await user.set({
+        name,
         courses: [],
         submissions: [],
         reviews: []
@@ -72,47 +73,22 @@ async function addUser(userId) {
     return user
 }
 
-async function createCourse(courseId, apiKey, teacherIds, studentIds) {
+async function createCourse(courseId, apiKey, users) {
     const course = firestore.collection('courses').doc(courseId)
     await course.set({
-        teachers: [],
         students: [],
         assignments: [],
         apiKey
     })
 
-    console.log(studentIds)
-    console.log(teacherIds)
-
-    for (const i in teacherIds) {
-        const teacherId = teacherIds[i].toString()
-        const teacherDocument = firestore.collection('users').doc(teacherId)
-        const teacherContent = await teacherDocument.get()
-
-        console.log(teacherId)
-        console.log(teacherContent.exists)
-        if (!teacherContent.exists) {
-            await addUser(teacherId)
-        }
-
-        await teacherDocument.update({
-            courses: FieldValue.arrayUnion(course)
-        })
-
-        await course.update({
-            teachers: FieldValue.arrayUnion(teacherDocument)
-        })
-    }
-
-    for (const i in studentIds) {
-        const studentId = studentIds[i].toString()
+    for (const student of users) {
+        const studentId = student.id
         const studentDocument = firestore.collection('users').doc(studentId)
         const studentContent = await studentDocument.get()
 
         if (!studentContent.exists) {
-            await addUser(studentId)
+            await addUser(studentId, student.name)
         }
-
 
         await studentDocument.update({
             courses: FieldValue.arrayUnion(course)
@@ -139,15 +115,27 @@ async function assignSubmission(submissionDocument, userId) {
 async function assignReview(submissionId, user) {
     const submissionDocument = firestore.collection('submissions').doc(submissionId)
     const submissionData = await submissionDocument.get()
+
     const reviewsCollection = firestore.collection('reviews')
+
     const assignmentDoc = submissionData.get('assignment')
     const assignmentData = await assignmentDoc.get()
+
+    const userData = await user.get()
+
+    const authorDoc = submissionData.get('author')
+    const authorData = await authorDoc.get()
+
     const rubric = assignmentData.get('rubric')
 
+    // Some parameters are duplicated in the review document to make other code simpler and avoid extra database queries
     const reviewDocument = await reviewsCollection.add({
         submission: submissionDocument,
         status: 'incomplete',
-        author: submissionData.get('author'),
+        author: authorDoc,
+        reviewerName: userData.get(name),
+        authorName: authorData.get(name),
+        downloadLink: submissionData.get('downloadLink')
         assignment: assignmentDoc,
         rubric: rubric
     })
@@ -184,8 +172,8 @@ async function completeReview(reviewId, userId, updateBlob) {
             // Merge the update criteria and the data from firestore
             // ... is spread notation, inlines all properties of the object
             updateBlob.rubric[i] = {
-                ...updateBlob.rubric[i],
-                ...rubric[i]
+                ...rubric[i],
+                ...updateBlob.rubric[i]
             }
         }
     }
@@ -206,7 +194,7 @@ async function getReviewsFromUser(assignmentId, userId) {
     const reviews = await userData.get('reviews')
     const reviewDocuments = await Promise.all(reviews.map(r => r.get()))
 
-    reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
+    // reviewDocuments.filter(r => r.get('submission').get('assignment').id === assignmentDocument.id)
 
     const reviewData = reviewDocuments.map(r => r.data())
     console.log(reviewData)

@@ -1,17 +1,18 @@
 mixin viewReview(review)
     .review
-        table#criteria
+        table#criteria(style="border-collapse: collapse;" +
+        "border: 1px solid black")
             tr
-                th Description
-                th Total Points
-                th Comments
-                th Score
+                th(style="border: 1px solid black") Description
+                th(style="border: 1px solid black") Total Points
+                th(style="border: 1px solid black") Comments
+                th(style="border: 1px solid black") Score
             each criteria in review.rubric
                 tr
-                    td
+                    td(style="border: 1px solid black")
                         p=criteria.description
                         p=criteria.longDescription
-                    td=criteria.totalPoints
-                    td=criteria.message || ""
-                    td=criteria.score || "none"
+                    td(style="border: 1px solid black")=criteria.totalPoints
+                    td(style="border: 1px solid black")=criteria.message || ""
+                    td(style="border: 1px solid black")=criteria.score || "none"
         p=review.message

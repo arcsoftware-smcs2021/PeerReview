@@ -1,9 +1,10 @@
 extends layout
 
 block content
+    h1=assignment.name
     p= submissionCount + " submissions"
     form(method='get', action='/lti/select/' + assignment.course_id + "/" + assignment.id)
-        div.reviewNumContainer
+        div.flex-container
             input#reviewInput(name="reviewNum", type='number', value=(submissionCount <= 3 ? submissionCount - 1 : 3))
             p reviews
         input#submitButton(type='submit', value='Confirm')

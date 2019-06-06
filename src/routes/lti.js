@@ -140,6 +140,8 @@ router.post('/assignment/:course/:assignment/review', (req, res, next) => {
                             incompleteCount: 0
                         }
 
+                        console.log(student.reviews)
+
                         // Count incomplete reviews
                         for (const review of student.reviews) {
                             if (review.status !== "complete") student.incompleteCount++
@@ -253,6 +255,7 @@ router.get('/info/:course/:assignment', (req, res, next) => {
                     title: "Peer Review",
                     submissionCount: n,
                     assignment: {
+                        name: assignment.name,
                         course_id: req.params.course,
                         id: req.params.assignment
                     }

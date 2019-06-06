@@ -4,30 +4,33 @@ block head
     script(src='/scripts/review.js')
 
 block content
+    .tabs
+        each review, index in reviews
+            - var reviewCount = 1
+            .tab(id=review.id + "-tab")="Review " + (index + 1)
     .reviews
         each review in reviews
-          div.w3-bar.w3-black
-            button(type = "button", class="w3-bar-item w3-button", onclick="openReview(review)") review
-        each review in reviews
             .review(id=review.id)
-                table.criteria
-                    tr
-                        th Description
-                        th Total Points
-                        th Comments
-                        th Score
-                    each criteria in review.rubric
-                        tr
-                            td
-                                p=criteria.description
-                                p=criteria.longDescription
-                            td=criteria.totalPoints
-                            td
-                                input(type="text", class="criteriaMessage", value=criteria.message || "")
-                            td
-                                input(type="number", class="criteriaScore", value=criteria.score || 0)
+                .feedback
+                    .rubric
+                        h3 Rubric
+                        .criteria
+                            .criteriaElement.criteriaHeader Description
+                            .criteriaElement.criteriaHeader Total Points
+                            .criteriaElement.criteriaHeader Comments
+                            .criteriaElement.criteriaHeader Score
+                            each criteria in review.rubric
+                                    .criteriaElement
+                                        p=criteria.description
+                                        p=criteria.longDescription
+                                    .criteriaElement.criteriaScore=criteria.totalPoints
+                                    .criteriaElement.criteriaScore
+                                        textarea(class="criteriaMessage")=criteria.message || ""
+                                    .criteriaElement.criteriaScore
+                                        input(type="number", value=criteria.score || 0)
+                    .comment
+                        h3 Comments
+                        textarea(class="message")=review.message || ""
+                        input(type="submit", class="submitReview", value=review.message ? "Update" : "Submit")
 
                 iframe.docPreview(width="100%", height="1000px", src="https://docs.google.com/gview?url=" + review.downloadLink + "&embedded=true")
-                p Notes
-                input(type="text", class="message", value=review.message || "")
-                input(type="submit", class="submitReview", value="Submit")

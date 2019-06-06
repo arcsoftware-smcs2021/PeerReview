@@ -1,18 +1,72 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // When the page is loaded, add listeners to the submit buttons and tabs
+    const submitButtons = document.getElementsByClassName("submitReview")
+    Array.prototype.forEach.call(submitButtons, button => {
+        button.addEventListener("click", (e) => {
+            buttonClicked(e.srcElement)
+        })
+    })
+
+    const tabs = document.getElementsByClassName("tab")
+    Array.prototype.forEach.call(tabs, button => {
+        button.addEventListener("click", (e) => {
+            openReview(e.srcElement)
+        })
+    })
+
+    // Load the first tab
+    openReview(tabs[0])
+}, false)
+
+function chunkArrayInGroups(arr, size) {
+    let res = []
+    for(let i = 0; i < arr.length; i += size) {
+        res.push(arr.slice(i, i + size))
+    }
+    return res
+}
+
+function openReview(element) {
+    // Get all elements with class="tabContent" and hide them
+    const tabContent = document.getElementsByClassName("review");
+    for (let i = 0; i < tabContent.length; i++) {
+        tabContent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    const tabs = document.getElementsByClassName("tab");
+    for (let i = 0; i < tabs.length; i++) {
+        tabs[i].className = tabs[i].className.replace(" activeTab", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(element.id.split('-')[0]).style.display = "block";
+    element.className += " activeTab";
+}
+
 function buttonClicked(element) {
-    const reviewId = element.parentElement.id
+    // Handle the submit button for a review being clicked
+    const reviewId = element.parentElement.parentElement.parentElement.id
     const reviewMessage = element.previousSibling.value
 
-    const criteriaTable = Array.from(document.getElementById('criteria').childNodes[0].childNodes).slice(1)
+    // Get an array of the elements that make up the criteria table
+    const criteriaTable = Array.from(document.getElementById(reviewId).childNodes[0].childNodes[0].childNodes[1].childNodes).slice(4)
+    console.log(criteriaTable)
 
+    // Loop through the criteria
     let rubric = []
-    for (const i in criteriaTable) {
-        const criteria = criteriaTable[i].cells
+    const chunkedCriteria = chunkArrayInGroups(criteriaTable, 4)
+    for (const i in chunkedCriteria) {
+        const criteria = chunkedCriteria[i]
 
+        // Extract values
+        const textInput = criteria[2].childNodes[0]
         rubric.push({})
-        rubric[i].message = criteria[2].childNodes[0].value
+        rubric[i].message = textInput.value
         rubric[i].score = criteria[3].childNodes[0].value
     }
 
+    // POST the criteria and comments
     fetch('review/' + reviewId, {
         method: 'POST',
         credentials: 'include',
@@ -24,40 +78,7 @@ function buttonClicked(element) {
             rubric
         })
     }).then(res => {
+        alert("Review submitted!")
         if (res.status === 200) location.reload();
     }).catch(console.error)
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const submitButtons = document.getElementsByClassName("submitReview")
-
-    Array.prototype.forEach.call(submitButtons, button => {
-        button.addEventListener("click", (e) => {
-            buttonClicked(e.srcElement)
-        })
-    }
-)}, false)
-
-/*
-Make tabs for the review.pug filePath
-*/
-
-function openReview(reviewName) {
-  var i, tabcontent, tablinks;
-
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(cityName).style.display = "block";
-  evt.currentTarget.className += " active";
 }
