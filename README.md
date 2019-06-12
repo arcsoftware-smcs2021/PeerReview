@@ -7,12 +7,7 @@ and allow for returning feedback to students.
 
 ## Canvas API
 
-The Canvas API is used to interact with Canvas by Instructure. Canvas is a learning-platform used by MCPS.
-
-Canvas allows students to view their assignments on courses and get grades from their teachers.
-
-This application is an external tool that can be used by any teacher to add peer review assignments to their course.
-
+The Canvas API is used to interact with Canvas by Instructure. Canvas is a learning-platform used by MCPS. Canvas allows students to view their assignments on courses and get grades from their teachers. This application is an external tool that can be used by any teacher to add peer review assignments to their course.
 
 ## Firestore
 
